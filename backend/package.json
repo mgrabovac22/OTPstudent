@@ -1,0 +1,45 @@
+{
+  "name": "cro-vote-webapp",
+  "version": "1.0.0",
+  "description": "Vote app",
+  "keywords": [
+    "student",
+    "OTP",
+    "modules"
+  ],
+  "homepage": "https://github.com/mgrabovac22/OTPstudent#readme",
+  "bugs": {
+    "url": "https://grabovacmarin000.atlassian.net/jira/software/projects/FP/boards/34/backlog"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mgrabovac22/OTPstudent.git"
+  },
+  "license": "ISC",
+  "author": "FOR-PETLJA",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "setup": "npm install && cd ./service && node server.js",
+    "start": "cd ./service && node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:fresh": "cd ./service/db && node refreshDatabase.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.1.0",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.14.1",
+    "nodemailer": "^7.0.3",
+    "qrcode": "^1.5.4",
+    "recaptcha-v3": "^1.11.3",
+    "speakeasy": "^2.0.0",
+    "winston": "^3.17.0"
+  }
+}
