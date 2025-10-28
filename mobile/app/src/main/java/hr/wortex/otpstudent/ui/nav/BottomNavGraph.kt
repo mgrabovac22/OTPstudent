@@ -7,6 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import hr.wortex.otpstudent.ui.home.HomeScreen
+import hr.wortex.otpstudent.ui.poslovi.BusinessScreen
+import hr.wortex.otpstudent.ui.profil.ProfileScreen
 
 @Composable
 fun MainNavGraph(navController: NavHostController) {
@@ -19,13 +22,13 @@ fun MainNavGraph(navController: NavHostController) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("business_screen") {
-                // todo
+                BusinessScreen()
             }
             composable("home_screen") {
-                // todo
+                HomeScreen()
             }
             composable("profile_screen") {
-                // todo
+                ProfileScreen()
             }
         }
     }

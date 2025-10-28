@@ -44,7 +44,18 @@ fun BottomNavigationBar(navController: NavController) {
             val iconOffset by animateDpAsState(if (selected) (-14).dp else (-10).dp)
             NavigationBarItem(
                 selected = selected,
-                onClick = { navController.navigate(route) },
+                onClick = {
+                    // očuvanje stanja ekrana (ne kraira novu istancu svaki puta)!
+                    if (currentRoute != route) {
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
                 icon = {
                     Box(
                         contentAlignment = Alignment.Center,
