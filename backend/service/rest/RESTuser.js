@@ -12,26 +12,26 @@ class RESTuser {
 
     const {
       hashPassword,
-      name,
+      firstName,
       lastName,
       email,
-      studyYear,
-      courseOfStudy,
+      yearOfStudy,
+      areaOfStudy,
       imagePath,
       cvPath,
-      birthDate
+      dateOfBirth
     } = req.body;
 
     if (
       !hashPassword ||
-      !name ||
+      !firstName ||
       !lastName ||
       !email ||
-      !studyYear ||
-      !courseOfStudy ||
+      !yearOfStudy ||
+      !areaOfStudy ||
       !imagePath ||
       !cvPath ||
-      !birthDate
+      !dateOfBirth
     ) {
       return res.status(400).json({ error: "Required data missing!" });
     }
@@ -41,15 +41,15 @@ class RESTuser {
       const hashedPassword = await bcrypt.hash(hashPassword, saltRounds);
 
       const user = {
-        name,
+        firstName,
         lastName,
         email,
-        studyYear,
-        courseOfStudy,
+        yearOfStudy,
+        areaOfStudy,
         password: hashedPassword,
         imagePath,
         cvPath,
-        birthDate
+        dateOfBirth
       };
 
       const response = await this.userDAO.add(user);
@@ -81,20 +81,20 @@ class RESTuser {
         return res.status(401).json({ error: "Invalid email or password!" });
       }
       
-      const isPasswordValid = await bcrypt.compare(hashPassword, user[0]?.password);
+      const isPasswordValid = await bcrypt.compare(hashPassword, user[0]?.password);      
       if (!isPasswordValid) {
         return res.status(401).json({ error: "Invalid email or password!" });
       }
 
       req.session.user = {
         email: user[0].email,
-        name: user[0].name,
+        firstName: user[0].firstName,
         lastName: user[0].lastName,
-        studyYear: user[0].studyYear,
-        courseOfStudy: user[0].courseOfStudy,
+        yearOfStudy: user[0].yearOfStudy,
+        areaOfStudy: user[0].areaOfStudy,
         imagePath: user[0].imagePath,
         cvPath: user[0].cvPath,
-        birthDate: user[0].birthDate
+        dateOfBirth: user[0].dateOfBirth
       };      
 
       res.status(200).json({ success: "Login successful!" });
