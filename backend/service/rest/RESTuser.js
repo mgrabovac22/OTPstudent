@@ -97,7 +97,7 @@ class RESTuser {
         dateOfBirth: user[0].dateOfBirth
       };      
 
-      res.status(200).json({ success: "Login successful!" });
+      res.status(200).json({ success: "Login successful!", email: req.session.user.email });
     } catch (err) {
       console.error("Error in login:", err);
       res.status(500).json({ error: "Internal server error" });

@@ -1,6 +1,6 @@
-package hr.wortex.otpstudent.domain.model
+package hr.wortex.otpstudent.data.remote.dto
 
-data class User(
+data class UserDto(
     val email: String,
     val firstName: String,
     val lastName: String,
