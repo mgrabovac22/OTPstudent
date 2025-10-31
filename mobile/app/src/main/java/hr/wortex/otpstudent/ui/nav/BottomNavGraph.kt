@@ -45,7 +45,7 @@ fun MainNavGraph(navController: NavHostController) {
             }
             composable("login_screen") {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LoginScreen(paddingValues = innerPadding)
+                    LoginScreen(paddingValues = innerPadding, navController = navController)
                 }
             }
         }

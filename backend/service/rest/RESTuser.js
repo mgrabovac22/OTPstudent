@@ -77,7 +77,7 @@ class RESTuser {
     try {
       const user = await this.userDAO.getUserByEmail(email);
 
-      if (!user) {
+      if (!user || !user[0] || !user[0].password) {
         return res.status(401).json({ error: "Invalid email or password!" });
       }
       

@@ -1,5 +1,6 @@
 package hr.wortex.otpstudent.ui.login
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,19 +36,40 @@ import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import hr.wortex.otpstudent.R
+import hr.wortex.otpstudent.di.DependencyProvider
+import hr.wortex.otpstudent.domain.usecase.Login
 
 @Composable
-fun LoginScreen(paddingValues: PaddingValues) {
+fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
+
+    var loginUseCase = remember { Login(DependencyProvider.authRepository) }
+    val viewModel = remember { LoginViewModel(loginUseCase) }
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(key1 = uiState) {
+        when (uiState) {
+            is LoginUiState.Success -> {
+                navController.navigate("home_screen") {
+                    popUpTo("login_screen") { inclusive = true }
+                }
+            }
+            else -> {}
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -151,8 +173,8 @@ fun LoginScreen(paddingValues: PaddingValues) {
                 onClick = {
                     emailError = if (email.isBlank()) "Potrebno je unijeti Email adresu" else ""
                     passwordError = if (password.isBlank()) "Potrebno je unijeti lozinku" else ""
-                    if (emailError.isEmpty() && passwordError.isEmpty()) {
-                        //login logika
+                    if (emailError.isEmpty() && passwordError.isEmpty() ) {
+                        viewModel.loginUser(email, password)
                     }
                 },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 90.dp),
@@ -196,7 +218,10 @@ fun LoginScreen(paddingValues: PaddingValues) {
 @Preview
 @Composable
 fun LoginPreview() {
+    //Lažni navController da preview radi
+    val navController = rememberNavController()
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        LoginScreen(paddingValues = innerPadding)
+        LoginScreen(paddingValues = innerPadding, navController = navController)
     }
 }

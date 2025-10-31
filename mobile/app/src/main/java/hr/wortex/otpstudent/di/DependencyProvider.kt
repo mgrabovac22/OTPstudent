@@ -3,16 +3,19 @@ package hr.wortex.otpstudent.di
 import hr.wortex.otpstudent.data.remote.api.IOtpApiService
 import hr.wortex.otpstudent.data.remote.datasource.AuthRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
+import hr.wortex.otpstudent.domain.repository.AuthRepository
 import hr.wortex.otpstudent.domain.repository.interfaces.IUserRepository
 import hr.wortex.otpstudent.domain.repository.JwtRepository
 import hr.wortex.otpstudent.domain.repository.UserRepository
+import hr.wortex.otpstudent.domain.repository.interfaces.IAuthRepository
+import hr.wortex.otpstudent.domain.usecase.Login
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object DependencyProvider {
     private val retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://10.0.2.2:8000/")
+            .baseUrl("https://10.0.2.2:8000")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -35,5 +38,13 @@ object DependencyProvider {
 
     val userRepository: IUserRepository by lazy {
         UserRepository(userRemoteDataSource, jwtRepository)
+    }
+
+    val authRepository: IAuthRepository by lazy {
+        AuthRepository(authRemoteDataSource)
+    }
+
+    val login by lazy {
+        Login(authRepository)
     }
 }
