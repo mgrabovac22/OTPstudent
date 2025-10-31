@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 function createToken(korisnik, tajniKljucJWT){
-	let token = jwt.sign({ oib: korisnik.oib }, tajniKljucJWT, { expiresIn: `15s` });
+	let token = jwt.sign({ email: korisnik.email }, tajniKljucJWT, { expiresIn: `15s` });
   return token;
 }
 

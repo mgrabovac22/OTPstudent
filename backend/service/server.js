@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const morgan = require("morgan");
 const helmet = require("helmet");
+const jwt = require("jsonwebtoken");
 const https = require("node:https");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -47,14 +48,34 @@ const restUser = new RESTuser();
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
 
-server.get("/api/getJWT", (req, res) => {
+//For web applications
+server.get("/api/getJWT", (req, res) => {    
     if (req.session.user) {
         const korisnik = { email: req.session.user.email };
         const token = createToken({ korisnik }, process.env.JWT_SECRET);
-        res.status(200).json({ token: `Bearer ${token}` });
+        res.status(200).json({ token: token });
     } else {
         res.status(401).json({ Error: "Session not created" });
     }
+});
+
+//For mobile applications
+server.post("/api/refresh", (req, res) => {    
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(401).json({ error: "No token" });
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const newAccessToken = createToken(
+      { email: decoded.email },
+      process.env.JWT_SECRET,
+      "15m"
+    );
+
+    res.json({ accessToken: newAccessToken });
+  } catch (e) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
 });
 
 server.get("/api/logout", (req, res) => {
@@ -77,7 +98,8 @@ server.all(/(.*)/, (req, res, next) => {
         return next();
     }
     
-    try {
+    try {      
+          
         const tokenValid = checkToken(req, process.env.JWT_SECRET);
                 
         if (!tokenValid) {

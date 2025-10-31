@@ -7,7 +7,7 @@ import hr.wortex.otpstudent.data.remote.dto.UserDto
 class UsersRemoteDataSource(
     private val api: IOtpApiService
 ) : IUsersRemoteDataSource {
-    override suspend fun getCurrentUser(token: String): UserDto {
-        return api.getCurrentUser("Bearer $token")
+    override suspend fun getCurrentUser(): UserDto {
+        return api.getCurrentUser()
     }
 }
