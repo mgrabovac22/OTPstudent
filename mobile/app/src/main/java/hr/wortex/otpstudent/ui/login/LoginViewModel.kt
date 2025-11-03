@@ -48,7 +48,7 @@ class LoginViewModel(private val loginUseCase: Login) : ViewModel() {
     fun validateEmail(email: String): String? {
         return when {
             email.isBlank() -> "Potrebno je unijeti Email adresu"
-            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Neispravan format Email adrese"
+            !ValidationUtils.isEmailValid(email) -> "Neispravan format Email adrese"
             else -> null
         }
     }
@@ -56,7 +56,7 @@ class LoginViewModel(private val loginUseCase: Login) : ViewModel() {
     fun validatePassword(password: String): String? {
         return when {
             password.isBlank() -> "Potrebno je unijeti lozinku"
-            password.length < 6 -> "Lozinka mora imati barem 6 znakova"
+            !ValidationUtils.isPasswordValid(password) -> "Lozinka mora imati barem 6 znakova"
             else -> null
         }
     }
