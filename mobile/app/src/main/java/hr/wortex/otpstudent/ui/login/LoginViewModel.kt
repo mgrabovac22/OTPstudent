@@ -8,6 +8,8 @@ import hr.wortex.otpstudent.domain.usecase.Login
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 sealed class LoginUiState {
     object Loading : LoginUiState()
@@ -26,12 +28,36 @@ class LoginViewModel(private val loginUseCase: Login) : ViewModel() {
             try {
                 val result = loginUseCase(email, password)
                 _uiState.value = LoginUiState.Success(result)
-            } catch (e: retrofit2.HttpException) {
-                val message = "Server error: ${e.code()}"
+            } catch (e: HttpException) {
+                val message = when (e.code()) {
+                    400 -> "Molimo unesite sve potrebne podatke."
+                    401 -> "Neispravna e-mail adresa ili lozinka."
+                    404 -> "Korisnik nije pronađen."
+                    500 -> "Greška na poslužitelju, pokušajte kasnije."
+                    else -> "Neočekivana greška (${e.code()})."
+                }
                 _uiState.value = LoginUiState.Error(message)
+            } catch (e: IOException) {
+                _uiState.value = LoginUiState.Error("Nema internetske veze. Provjerite mrežu.")
             } catch (e: Exception) {
-                _uiState.value = LoginUiState.Error(e.message ?: "Unknown error")
+                _uiState.value = LoginUiState.Error("Dogodila se greška: ${e.localizedMessage}")
             }
+        }
+    }
+
+    fun validateEmail(email: String): String? {
+        return when {
+            email.isBlank() -> "Potrebno je unijeti Email adresu"
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Neispravan format Email adrese"
+            else -> null
+        }
+    }
+
+    fun validatePassword(password: String): String? {
+        return when {
+            password.isBlank() -> "Potrebno je unijeti lozinku"
+            password.length < 6 -> "Lozinka mora imati barem 6 znakova"
+            else -> null
         }
     }
 }
