@@ -21,4 +21,8 @@ class AuthRepository(
             responseMessage = dto.success ?: ""
         )
     }
+
+    suspend fun hasSavedTokens(): Boolean {
+        return storage.getAccessToken() != null || storage.getRefreshToken() != null
+    }
 }
