@@ -15,7 +15,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hr.wortex.otpstudent.R
@@ -31,7 +30,7 @@ fun HomeScreen(paddingValues: PaddingValues) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
+            .padding(0.dp),
         contentAlignment = Alignment.Center
     ) {
         when (val state = uiState) {
@@ -47,7 +46,7 @@ fun HomeScreen(paddingValues: PaddingValues) {
                 val user = state.user
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
+                    verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Column(
                         horizontalAlignment = Alignment.Start,
@@ -82,8 +81,8 @@ fun HomeScreen(paddingValues: PaddingValues) {
 
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(50.dp, 50.dp, 50.dp, 0.dp).fillMaxWidth()
+                            verticalArrangement = Arrangement.SpaceEvenly,
+                            modifier = Modifier.padding(30.dp,10.dp).fillMaxWidth()
                         ) {
                             Button(
                                 onClick = {
@@ -102,8 +101,6 @@ fun HomeScreen(paddingValues: PaddingValues) {
                                     textAlign = TextAlign.Center
                                 )
                             }
-
-                            Spacer(Modifier.height(30.dp))
 
                             Button(
                                 onClick = {
