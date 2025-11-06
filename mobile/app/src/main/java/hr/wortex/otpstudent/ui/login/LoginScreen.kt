@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -25,10 +26,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import hr.wortex.otpstudent.R
 import hr.wortex.otpstudent.di.DependencyProvider
+import androidx.fragment.app.FragmentActivity
+import kotlinx.coroutines.launch
+import hr.wortex.otpstudent.ui.login.BiometricHelper
 
 @Composable
 fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val viewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(DependencyProvider.login))
     val uiState by viewModel.uiState.collectAsState()
@@ -40,6 +45,14 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     var passwordVisible by remember { mutableStateOf(false) }
+
+    // Biometric availability and token presence
+    var canUseBiometric by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val hasTokens = DependencyProvider.authRepository.hasSavedTokens()
+        canUseBiometric = hasTokens && BiometricHelper.isAvailable(context)
+    }
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -144,6 +157,43 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                 } else {
                     Text(text = "Prijava")
+                }
+            }
+
+            if (canUseBiometric) {
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = {
+                        val activity = context as? FragmentActivity
+                        if (activity == null) {
+                            Toast.makeText(context, "Biometrija nije podržana u ovoj aktivnosti", Toast.LENGTH_SHORT).show()
+                        } else {
+                            BiometricHelper.prompt(
+                                activity = activity,
+                                onSuccess = {
+                                    scope.launch {
+                                        try {
+                                            // Verify session by calling current-user; interceptor will refresh if needed
+                                            DependencyProvider.userRepository.getCurrentUser()
+                                            navController.navigate("home_screen") {
+                                                popUpTo("login_screen") { inclusive = true }
+                                            }
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "Sesija istekla. Prijavite se lozinkom.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                },
+                                onError = { msg ->
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 90.dp)
+                ) {
+                    Text(text = "Prijava otiskom prsta")
                 }
             }
 
