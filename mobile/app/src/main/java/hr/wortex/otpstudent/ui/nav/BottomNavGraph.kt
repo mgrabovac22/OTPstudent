@@ -38,7 +38,7 @@ fun MainNavGraph(navController: NavHostController) {
                 BusinessScreen()
             }
             composable("home_screen") {
-                HomeScreen()
+                HomeScreen(innerPadding)
             }
             composable("profile_screen") {
                 ProfileScreen()
