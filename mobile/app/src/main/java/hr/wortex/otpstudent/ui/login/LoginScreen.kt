@@ -46,7 +46,6 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
 
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Biometric availability and token presence
     var canUseBiometric by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -54,18 +53,21 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
         canUseBiometric = hasTokens && BiometricHelper.isAvailable(context)
     }
 
+    var generalError by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(uiState) {
         when (uiState) {
             is LoginUiState.Success -> {
-                Toast.makeText(context, "Prijava uspješna!", Toast.LENGTH_SHORT).show()
                 navController.navigate("home_screen") {
                     popUpTo("login_screen") { inclusive = true }
                 }
             }
             is LoginUiState.Error -> {
-                Toast.makeText(context, (uiState as LoginUiState.Error).message, Toast.LENGTH_SHORT).show()
+                generalError = (uiState as LoginUiState.Error).message
             }
-            else -> {}
+            else -> {
+                generalError = null
+            }
         }
     }
 
@@ -96,6 +98,7 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // Email
             TextField(
                 value = email,
                 onValueChange = {
@@ -115,8 +118,20 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                 )
             )
 
+            if (emailError != null) {
+                Text(
+                    text = emailError ?: "",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
+            }
+
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Password
             TextField(
                 value = password,
                 onValueChange = {
@@ -136,6 +151,17 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                     unfocusedIndicatorColor = Color.White
                 )
             )
+
+            if (passwordError != null) {
+                Text(
+                    text = passwordError ?: "",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -160,33 +186,40 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                 }
             }
 
+            if (generalError != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = generalError ?: "",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
+
             if (canUseBiometric) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = {
                         val activity = context as? FragmentActivity
-                        if (activity == null) {
-                            Toast.makeText(context, "Biometrija nije podržana u ovoj aktivnosti", Toast.LENGTH_SHORT).show()
-                        } else {
+                        if (activity != null) {
                             BiometricHelper.prompt(
                                 activity = activity,
                                 onSuccess = {
                                     scope.launch {
                                         try {
-                                            // Verify session by calling current-user; interceptor will refresh if needed
                                             DependencyProvider.userRepository.getCurrentUser()
                                             navController.navigate("home_screen") {
                                                 popUpTo("login_screen") { inclusive = true }
                                             }
                                         } catch (e: Exception) {
-                                            Toast.makeText(context, "Sesija istekla. Prijavite se lozinkom.", Toast.LENGTH_SHORT).show()
+                                            generalError = "Sesija istekla. Prijavite se lozinkom."
                                         }
                                     }
                                 },
-                                onError = { msg ->
-                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                }
+                                onError = { msg -> generalError = msg }
                             )
+                        } else {
+                            generalError = "Biometrija nije podržana u ovoj aktivnosti"
                         }
                     },
                     modifier = Modifier
