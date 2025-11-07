@@ -104,6 +104,21 @@ class RESTuser {
       const accessToken = createAccessToken(tokenData);
       const refreshToken = createRefreshToken(tokenData);
 
+        if (req.headers["x-mobile"] === "true") {
+            return res.json({
+                success: "Login successful",
+                email,
+                accessToken: accessToken,
+                refreshToken: refreshToken
+            });
+        }
+        else{
+          res.status(200).json({
+              success: "Login successful",
+              accessToken,
+              refreshToken
+          });
+        }
       if (req.headers["x-mobile"] === "true") {
         return res.json({
           success: "Login successful",
