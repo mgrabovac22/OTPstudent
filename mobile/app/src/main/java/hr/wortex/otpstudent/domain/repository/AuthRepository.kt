@@ -23,6 +23,6 @@ class AuthRepository(
     }
 
     suspend fun hasSavedTokens(): Boolean {
-        return storage.getAccessToken() != null || storage.getRefreshToken() != null
+        return !storage.getAccessToken().isNullOrBlank() || !storage.getRefreshToken().isNullOrBlank()
     }
 }
