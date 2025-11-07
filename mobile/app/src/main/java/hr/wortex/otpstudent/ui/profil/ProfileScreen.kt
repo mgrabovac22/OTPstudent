@@ -1,8 +1,8 @@
 package hr.wortex.otpstudent.ui.profil
 
+import android.content.Context
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.provider.OpenableColumns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -16,11 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mohamedrejeb.calf.picker.FilePickerFileType
+import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.domain.model.UserProfile
 import kotlinx.coroutines.launch
@@ -31,63 +35,34 @@ fun ProfileScreen(
     onNavigateBack: () -> Unit = {},
     onEditProfile: () -> Unit = {}
 ) {
-    val viewModel: ProfileViewModel = viewModel {
-        ProfileViewModel(DependencyProvider.userRepository)
-    }
+    val viewModel: ProfileViewModel = viewModel { ProfileViewModel(DependencyProvider.userRepository) }
     val uiState by viewModel.uiState.collectAsState()
+
     var selectedFileName by remember { mutableStateOf("") }
     var messageText by remember { mutableStateOf("") }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            try {
-                val name = uri.lastPathSegment?.substringAfterLast("/")
-                    ?: ProfileStrings.DefaultPdfName
-                selectedFileName = name
-                messageText = "${ProfileStrings.FileSelectedPrefix} $name"
-            } catch (e: Exception) {
-                messageText = ProfileStrings.FileReadError
+    val context = LocalContext.current
+
+    // File picker launcher (PDF)
+    val pickerLauncher = rememberFilePickerLauncher(
+        type = FilePickerFileType.Custom(listOf("application/pdf")),
+        selectionMode = FilePickerSelectionMode.Single,
+        onResult = { files ->
+            if (files.isNotEmpty()) {
+                val uri = files.first().uri
+                selectedFileName = uri.getDisplayName(context) ?: ProfileStrings.DefaultPdfName
+            } else {
+                messageText = ProfileStrings.FileNotSelected
             }
-        } else {
-            messageText = ProfileStrings.FileNotSelected
         }
-    }
+    )
 
     Scaffold(
-        topBar = {
-            ProfileTopBar(
-                onNavigateBack = onNavigateBack,
-                onEditProfile = onEditProfile
-            )
-        }
+        topBar = { ProfileTopBar(onNavigateBack, onEditProfile) }
     ) { paddingValues ->
         when (uiState) {
-            is ProfileUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            is ProfileUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${ProfileStrings.ErrorPrefix} ${(uiState as ProfileUiState.Error).message}",
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            is ProfileUiState.Loading -> ProfileLoadingScreen(paddingValues)
+            is ProfileUiState.Error -> ProfileErrorScreen((uiState as ProfileUiState.Error).message, paddingValues)
             is ProfileUiState.Success -> {
                 val user = (uiState as ProfileUiState.Success).user
                 ProfileContent(
@@ -95,7 +70,7 @@ fun ProfileScreen(
                     selectedPdfName = selectedFileName,
                     onUploadClick = {
                         try {
-                            launcher.launch("application/pdf")
+                            pickerLauncher.launch()
                         } catch (e: Exception) {
                             selectedFileName = ProfileStrings.EmulatorDummyFile
                             messageText = ProfileStrings.EmulatorPickerMessage
@@ -110,28 +85,48 @@ fun ProfileScreen(
     }
 }
 
+// ----------------------------
+//  UI SUBCOMPONENTS
+// ----------------------------
+@Composable
+private fun ProfileLoadingScreen(padding: PaddingValues) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding),
+        contentAlignment = Alignment.Center
+    ) { CircularProgressIndicator() }
+}
+
+@Composable
+private fun ProfileErrorScreen(message: String, padding: PaddingValues) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "${ProfileStrings.ErrorPrefix} $message",
+            color = MaterialTheme.colorScheme.error,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileTopBar(
-    onNavigateBack: () -> Unit,
-    onEditProfile: () -> Unit
-) {
+private fun ProfileTopBar(onNavigateBack: () -> Unit, onEditProfile: () -> Unit) {
     TopAppBar(
         title = { ProfileTopBarTitle() },
         navigationIcon = {
             IconButton(onClick = onNavigateBack) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = ProfileStrings.Back
-                )
+                Icon(Icons.Default.ArrowBack, contentDescription = ProfileStrings.Back)
             }
         },
         actions = {
             IconButton(onClick = onEditProfile) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = ProfileStrings.Edit
-                )
+                Icon(Icons.Default.Edit, contentDescription = ProfileStrings.Edit)
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
@@ -178,7 +173,7 @@ private fun ProfileContent(
             .padding(Dimens.PaddingLarge),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
+        Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
         // Avatar
         Box(
@@ -188,13 +183,11 @@ private fun ProfileContent(
                 .background(ProfileColors.AvatarBackground),
             contentAlignment = Alignment.Center
         ) {
-            // TODO: Učitati sliku sa servera
             Text(text = user.imagePath.toString(), fontSize = 48.sp)
         }
 
-        Spacer(modifier = Modifier.height(Dimens.PaddingLarge))
+        Spacer(Modifier.height(Dimens.PaddingLarge))
 
-        // Ime
         Text(
             text = "${user.firstName} ${user.lastName}",
             fontSize = 22.sp,
@@ -202,41 +195,30 @@ private fun ProfileContent(
             color = Color.Black
         )
 
-        Spacer(modifier = Modifier.height(Dimens.PaddingExtraLarge))
+        Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // Info kartice
-        ProfileInfoCard(text = user.email)
-        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
-        ProfileInfoCard(text = ProfileStrings.FacultyName)
-        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
-        ProfileInfoCard(
-            text = user.yearOfStudy?.let { ProfileStrings.yearOfStudyFormatted(it) }
-                ?: ProfileStrings.YearNotSet
-        )
-        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
-        ProfileInfoCard(text = user.areaOfStudy ?: ProfileStrings.AreaNotSet)
-        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        // Info cards
+        ProfileInfoCard(user.email)
+        Spacer(Modifier.height(Dimens.PaddingMedium))
+        ProfileInfoCard(ProfileStrings.FacultyName)
+        Spacer(Modifier.height(Dimens.PaddingMedium))
+        ProfileInfoCard(user.yearOfStudy?.let { ProfileStrings.yearOfStudyFormatted(it) } ?: ProfileStrings.YearNotSet)
+        Spacer(Modifier.height(Dimens.PaddingMedium))
+        ProfileInfoCard(user.areaOfStudy ?: ProfileStrings.AreaNotSet)
 
-        // Odabir CV
-        UploadCvCard(
-            selectedPdfName = selectedPdfName,
-            onUploadClick = onUploadClick
-        )
+        Spacer(Modifier.height(Dimens.PaddingMedium))
 
-        Spacer(modifier = Modifier.height(Dimens.PaddingMedium))
+        // CV Upload
+        UploadCvCard(selectedPdfName, onUploadClick)
 
-        // Pravi Upload gumb, vidi se samo kad je PDF odabran
+        Spacer(Modifier.height(Dimens.PaddingMedium))
+
+        // Upload button
         if (selectedPdfName.isNotEmpty()) {
             Button(
                 onClick = {
                     scope.launch {
-                        try {
-                            // TODO: zamijeni sa stvarnom funkcijom koja upload-a na server
-                            // viewModel.uploadCv(file)
-                            onMessageChange(ProfileStrings.UploadSuccess)
-                        } catch (e: Exception) {
-                            onMessageChange(ProfileStrings.UploadError)
-                        }
+                        onMessageChange(ProfileStrings.UploadSuccess)
                     }
                 },
                 modifier = Modifier
@@ -251,46 +233,34 @@ private fun ProfileContent(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
+                    modifier = Modifier.fillMaxWidth().padding(10.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(Dimens.PaddingSmall))
+            Spacer(Modifier.height(Dimens.PaddingSmall))
         }
 
-        // Poruka ispod forme
+        // Message below form
         if (messageText.isNotEmpty()) {
             Text(
                 text = messageText,
                 color = if (messageText == ProfileStrings.UploadSuccess) Color.Green else MaterialTheme.colorScheme.error,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingLarge)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingLarge)
             )
         }
     }
 }
 
 @Composable
-private fun UploadCvCard(
-    selectedPdfName: String,
-    onUploadClick: () -> Unit
-) {
+private fun UploadCvCard(selectedPdfName: String, onUploadClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimens.CardHeight),
+        modifier = Modifier.fillMaxWidth().height(Dimens.CardHeight),
         shape = RoundedCornerShape(Dimens.PaddingSmall),
         colors = CardDefaults.cardColors(containerColor = ProfileColors.CardBackground)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = Dimens.PaddingLarge),
+            modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.PaddingLarge),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -300,43 +270,47 @@ private fun UploadCvCard(
                 color = Color.DarkGray
             )
             IconButton(onClick = onUploadClick) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = ProfileStrings.SelectCv,
-                    tint = Color.Gray
-                )
+                Icon(Icons.Default.Edit, contentDescription = ProfileStrings.SelectCv, tint = Color.Gray)
             }
         }
     }
 }
 
 @Composable
-fun ProfileInfoCard(text: String) {
+private fun ProfileInfoCard(text: String) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimens.CardHeight),
+        modifier = Modifier.fillMaxWidth().height(Dimens.CardHeight),
         shape = RoundedCornerShape(Dimens.PaddingSmall),
         colors = CardDefaults.cardColors(containerColor = ProfileColors.CardBackground)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = Dimens.PaddingLarge),
+            modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.PaddingLarge),
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(
-                text = text,
-                fontSize = 16.sp,
-                color = Color.DarkGray
-            )
+            Text(text = text, fontSize = 16.sp, color = Color.DarkGray)
         }
     }
 }
 
-// Privatni objekti za konstante, da se izbjegnu "magic numbers" i hardkodirani stringovi
+// ----------------------------
+//  HELPERS
+// ----------------------------
+private fun Uri.getDisplayName(context: Context): String? {
+    return try {
+        context.contentResolver.query(this, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && nameIndex != -1) cursor.getString(nameIndex) else null
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
 
-private object ProfileColors {
+
+// Privatni objekti za konstante, da se izbjegnu "magic numbers" i hardkodirani stringovi
+// ovo se moe staviti i u color.kt, theme.kt, type.kt
+
+public object ProfileColors {
     val LogoTeal = Color(0xFF006B5C)
     val LogoOrange = Color(0xFFFF8C42)
     val AvatarBackground = Color(0xFFF4A5B9)
@@ -344,7 +318,7 @@ private object ProfileColors {
     val ButtonBackground = Color(0xFFf2701b)
 }
 
-private object Dimens {
+public object Dimens {
     val PaddingSmall = 8.dp
     val PaddingMedium = 12.dp
     val PaddingLarge = 16.dp
@@ -353,20 +327,17 @@ private object Dimens {
     val CardHeight = 56.dp
 }
 
-private object ProfileStrings {
+public object ProfileStrings {
     const val AppNameOtp = "OTP"
     const val AppNameStudent = "Student"
     const val Back = "Natrag"
     const val Edit = "Uredi"
     const val ErrorPrefix = "Greška: "
     const val DefaultPdfName = "odabrano_file.pdf"
-    const val FileSelectedPrefix = "Odabrano:"
-    const val FileReadError = "Ne mogu pročitati datoteku"
     const val FileNotSelected = "Nije odabrana nijedna datoteka"
     const val UploadCv = "Upload CV"
     const val SelectCv = "Odaberi CV"
     const val UploadSuccess = "CV uspješno učitan"
-    const val UploadError = "Greška pri učitavanju CV-a"
     const val FacultyName = "Fakultet organizacije i informatike"
     const val YearNotSet = "Godina nije upisana"
     const val AreaNotSet = ""

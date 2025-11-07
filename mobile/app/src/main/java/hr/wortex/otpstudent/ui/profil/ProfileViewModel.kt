@@ -46,7 +46,7 @@ class ProfileViewModel(
 
                 _uiState.value = ProfileUiState.Success(userProfile)
             } catch (e: Exception) {
-                _uiState.value = ProfileUiState.Error(e.message ?: "Unknown error")
+                _uiState.value = ProfileUiState.Error(e.message ?: "Greška prilikom učitavanja profila.")
             }
         }
     }
@@ -57,5 +57,13 @@ class ProfileViewModel(
 
     fun uploadCV(inputStream: InputStream) {
         //TODO: Implementirati spremanje CV-a na server
+    }
+
+    fun openEditScreen(){
+        //TODO: Implement navigation event (možda kroz StateFlow<UiEvent>)
+    }
+
+    fun previousScreen(){
+        //TODO: Implement navigation back event
     }
 }

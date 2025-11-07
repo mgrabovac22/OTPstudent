@@ -80,5 +80,17 @@ dependencies {
     implementation("androidx.datastore:datastore-core:1.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
+
+
+
+
+    implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.3")
+    implementation("com.mohamedrejeb.calf:calf-file-picker-coil:0.5.1")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha08")
+
+
+
+
+
     implementation("androidx.biometric:biometric:1.1.0")
 }
