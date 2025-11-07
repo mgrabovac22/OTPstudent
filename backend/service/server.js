@@ -124,6 +124,8 @@ server.all(/(.*)/, (req, res, next) => {
 
 
 server.get("/api/current-user", restUser.getCurrentUser.bind(restUser));
+server.put("/api/update-user", restUser.updateUser.bind(restUser));
+server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`

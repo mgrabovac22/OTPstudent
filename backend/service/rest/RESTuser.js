@@ -1,5 +1,5 @@
 const UserDAO = require("../dao/userDAO.js");
-const { createToken } = require("../modules/jwtModul.js");
+const { createToken, checkToken } = require("../modules/jwtModul.js");
 const bcrypt = require("bcrypt");
 
 class RESTuser {
@@ -72,57 +72,57 @@ class RESTuser {
     const { email, hashPassword } = req.body;
 
     if (!email || !hashPassword) {
-        return res.status(400).json({ error: "Required data missing!" });
+      return res.status(400).json({ error: "Required data missing!" });
     }
 
     try {
-        const user = await this.userDAO.getUserByEmail(email);
+      const user = await this.userDAO.getUserByEmail(email);
 
-        if (!user || !user[0] || !user[0].password) {
-            return res.status(401).json({ error: "Invalid email or password!" });
-        }
+      if (!user || !user[0] || !user[0].password) {
+        return res.status(401).json({ error: "Invalid email or password!" });
+      }
 
-        const isPasswordValid = await bcrypt.compare(hashPassword, user[0].password);
+      const isPasswordValid = await bcrypt.compare(hashPassword, user[0].password);
 
-        if (!isPasswordValid) {
-            return res.status(401).json({ error: "Invalid email or password!" });
-        }
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: "Invalid email or password!" });
+      }
 
-        req.session.user = {
-            email: user[0].email,
-            firstName: user[0].firstName,
-            lastName: user[0].lastName,
-            yearOfStudy: user[0].yearOfStudy,
-            areaOfStudy: user[0].areaOfStudy,
-            imagePath: user[0].imagePath,
-            cvPath: user[0].cvPath,
-            dateOfBirth: user[0].dateOfBirth
-        };
+      req.session.user = {
+        email: user[0].email,
+        firstName: user[0].firstName,
+        lastName: user[0].lastName,
+        yearOfStudy: user[0].yearOfStudy,
+        areaOfStudy: user[0].areaOfStudy,
+        imagePath: user[0].imagePath,
+        cvPath: user[0].cvPath,
+        dateOfBirth: user[0].dateOfBirth
+      };
 
-        const accessToken = createToken({ email }, process.env.JWT_SECRET, "15m");
-        const refreshToken = createToken({ email }, process.env.JWT_REFRESH_SECRET, "7d");
+      const accessToken = createToken({ email }, process.env.JWT_SECRET, "15m");
+      const refreshToken = createToken({ email }, process.env.JWT_REFRESH_SECRET, "7d");
 
-        if (req.headers["x-mobile"] === "true") {
-            const accessTokenMobile = createToken({ email }, process.env.JWT_SECRET);
-            return res.json({
-                success: "Login successful",
-                email,
-                accessToken: accessTokenMobile,
-                refreshToken: refreshToken
-            });
-        }
-        else{
-          res.status(200).json({
-              success: "Login successful",
-              accessToken,
-              refreshToken
-          });
-        }
+      if (req.headers["x-mobile"] === "true") {
+        const accessTokenMobile = createToken({ email }, process.env.JWT_SECRET);
+        return res.json({
+          success: "Login successful",
+          email,
+          accessToken: accessTokenMobile,
+          refreshToken: refreshToken
+        });
+      }
+      else {
+        res.status(200).json({
+          success: "Login successful",
+          accessToken,
+          refreshToken
+        });
+      }
 
 
     } catch (err) {
-        console.error("Error during login:", err);
-        res.status(500).json({ error: "Internal server error", details: err.message });
+      console.error("Error during login:", err);
+      res.status(500).json({ error: "Internal server error", details: err.message });
     }
   }
 
@@ -130,20 +130,91 @@ class RESTuser {
     res.type("application/json");
 
     try {
-      const user = {
-            email: "grabovacmarin321",
-            firstName: "Marin",
-            lastName: "Grabovac",
-            yearOfStudy: "4",
-            areaOfStudy: "IPI",
-            imagePath: "default.jpg",
-            cvPath: "default.pdf",
-            dateOfBirth: "nez"
-      };
-      
-      res.status(200).json(user);
+      const data = checkToken(req, process.env.JWT_SECRET);
+
+      if (!data) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+
+      const email = data.email;
+
+      const user = await this.userDAO.getUserByEmail(email);
+
+      if (!user || !user[0]) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      delete user[0].password;
+
+      res.status(200).json(user[0]);
     } catch (err) {
       console.error("Error in getCurrentUser:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  async updateUser(req, res) {
+    res.type("application/json");
+
+    try {
+      const data = checkToken(req, process.env.JWT_SECRET);
+
+      if (!data) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+
+      const email = data.email;
+      const updatedUserData = req.body;
+
+      const updatePromises = [];
+
+      for (const [key, value] of Object.entries(updatedUserData)) {
+        if (key === 'password') {
+          const saltRounds = 10;
+          const hashedPassword = await bcrypt.hash(value, saltRounds);
+          updatePromises.push(this.userDAO.update(email, key, hashedPassword));
+          continue;
+        }
+        
+        updatePromises.push(this.userDAO.update(email, key, value));
+      }
+
+      const results = await Promise.all(updatePromises);
+
+      const hasFailures = results.some(result => !result);
+
+      if (!hasFailures) {
+        res.status(200).json({ success: "User updated successfully!" });
+      } else {
+        res.status(400).json({ error: "User update failed!" });
+      }
+    } catch (err) {
+      console.error("Error in updateUser:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  async deleteUser(req, res) {
+    res.type("application/json");
+
+    try {
+      const data = checkToken(req, process.env.JWT_SECRET);
+
+      if (!data) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+
+      const email = data.email;
+
+      const response = await this.userDAO.delete(email);
+
+      if (response) {
+        res.status(200).json({ success: "User deleted successfully!" });
+      } else {
+        res.status(400).json({ error: "User deletion failed!" });
+      }
+    } catch (err) {
+      console.error("Error in deleteUser:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   }
