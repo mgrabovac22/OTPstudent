@@ -58,7 +58,7 @@ fun ProfileScreen(
     )
 
     Scaffold(
-        topBar = { ProfileTopBar(onNavigateBack, onEditProfile) }
+        topBar = { ProfileTopBar(onEditProfile) }
     ) { paddingValues ->
         when (uiState) {
             is ProfileUiState.Loading -> ProfileLoadingScreen(paddingValues)
@@ -116,14 +116,9 @@ private fun ProfileErrorScreen(message: String, padding: PaddingValues) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileTopBar(onNavigateBack: () -> Unit, onEditProfile: () -> Unit) {
+private fun ProfileTopBar(onEditProfile: () -> Unit) {
     TopAppBar(
         title = { ProfileTopBarTitle() },
-        navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = ProfileStrings.Back)
-            }
-        },
         actions = {
             IconButton(onClick = onEditProfile) {
                 Icon(Icons.Default.Edit, contentDescription = ProfileStrings.Edit)
