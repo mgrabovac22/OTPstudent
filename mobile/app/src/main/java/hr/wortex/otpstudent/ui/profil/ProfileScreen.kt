@@ -5,10 +5,11 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -161,11 +162,14 @@ private fun ProfileContent(
 ) {
     val scope = rememberCoroutineScope()
 
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(Dimens.PaddingLarge),
+            .padding(Dimens.PaddingLarge)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
@@ -228,22 +232,28 @@ private fun ProfileContent(
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
                 )
             }
             Spacer(Modifier.height(Dimens.PaddingSmall))
         }
 
-        // Message below form
+        // Poruka ispod forme
         if (messageText.isNotEmpty()) {
             Text(
                 text = messageText,
                 color = if (messageText == ProfileStrings.UploadSuccess) Color.Green else MaterialTheme.colorScheme.error,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingLarge)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.PaddingLarge)
             )
         }
+
+        Spacer(Modifier.height(32.dp))
     }
 }
 

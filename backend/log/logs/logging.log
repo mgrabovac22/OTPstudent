@@ -91,3 +91,13 @@
 2025-11-07 14:39:32 INFO: JWT valid | Time: 2025-11-07T13:39:32.543Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
 2025-11-07 14:48:45 INFO: JWT valid | Time: 2025-11-07T13:48:45.139Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
 2025-11-07 14:48:46 INFO: JWT valid | Time: 2025-11-07T13:48:46.465Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-07 18:52:13 INFO: Server started at: https://localhost:8000
+2025-11-07 18:52:42 INFO: JWT valid | Time: 2025-11-07T17:52:42.579Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-07 18:52:44 INFO: JWT valid | Time: 2025-11-07T17:52:44.652Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-10 16:05:09 INFO: Server started at: https://localhost:8000
+2025-11-10 16:06:56 INFO: JWT valid | Time: 2025-11-10T15:06:56.301Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-10 16:06:57 INFO: JWT valid | Time: 2025-11-10T15:06:57.814Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-10 16:11:36 INFO: JWT valid | Time: 2025-11-10T15:11:36.364Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-10 16:11:37 INFO: JWT valid | Time: 2025-11-10T15:11:37.739Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-10 16:14:18 INFO: JWT valid | Time: 2025-11-10T15:14:18.288Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
+2025-11-10 16:14:19 INFO: JWT valid | Time: 2025-11-10T15:14:19.545Z | Method: GET | Path: /api/current-user | OIB: N/A | Email: N/A | Role: N/A | IP: ::ffff:127.0.0.1
