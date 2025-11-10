@@ -4,6 +4,8 @@ import hr.wortex.otpstudent.domain.repository.TokenRepository
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.ResponseBody.Companion.toResponseBody
 
 class AuthInterceptor(
     private val tokenRepo: TokenRepository
@@ -26,10 +28,11 @@ class AuthInterceptor(
                 .build()
         }
 
-        var response = chain.proceed(request)
+        val originalResponse = chain.proceed(request)
 
-        if (response.code == 401) {
-            response.close()
+        if (originalResponse.code == 401) {
+
+            originalResponse.body?.close()
 
             val newToken = runBlocking { tokenRepo.refreshToken() }
 
@@ -37,10 +40,22 @@ class AuthInterceptor(
                 val retryRequest = request.newBuilder()
                     .header("Authorization", "Bearer $newToken")
                     .build()
-                response = chain.proceed(retryRequest)
+
+                return chain.proceed(retryRequest)
+            } else {
+                val message = "{\"error\":\"Token refresh failed. Re-login required.\"}"
+                val body = message.toResponseBody("application/json".toMediaTypeOrNull())
+
+                return Response.Builder()
+                    .request(request)
+                    .protocol(originalResponse.protocol)
+                    .code(401)
+                    .message("Unauthorized (Refresh Failed)")
+                    .body(body)
+                    .build()
             }
         }
 
-        return response
+        return originalResponse
     }
 }

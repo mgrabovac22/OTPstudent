@@ -1,22 +1,21 @@
 const jwt = require("jsonwebtoken");
 
-function createToken(korisnik, tajniKljucJWT){
-	let token = jwt.sign({ email: korisnik.email }, tajniKljucJWT, { expiresIn: `15s` });
-  return token;
+function createAccessToken(korisnik) {
+    return jwt.sign({ email: korisnik.email }, process.env.JWT_SECRET, { expiresIn: '15s' });
+}
+
+function createRefreshToken(korisnik) {
+    return jwt.sign({ email: korisnik.email }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 }
 
 function checkToken(zahtjev, tajniKljucJWT) {
     if (zahtjev.headers.authorization != null) {
         let token = zahtjev.headers.authorization.split(" ")[1] ?? "";
-        try {
-            let podaci = jwt.verify(token, tajniKljucJWT);
-            return podaci;
-        } catch (e) {
-            console.log(e)
-            return false;
-        }
+        
+        let podaci = jwt.verify(token, tajniKljucJWT);
+        return podaci;
     }
     return false;
 }
 
-module.exports = { createToken, checkToken };
+module.exports = { createAccessToken, createRefreshToken, checkToken };

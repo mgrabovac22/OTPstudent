@@ -1,5 +1,5 @@
 const UserDAO = require("../dao/userDAO.js");
-const { createToken, checkToken } = require("../modules/jwtModul.js");
+const { createAccessToken, checkToken, createRefreshToken } = require("../modules/jwtModul.js");
 const bcrypt = require("bcrypt");
 
 class RESTuser {
@@ -99,15 +99,16 @@ class RESTuser {
         dateOfBirth: user[0].dateOfBirth
       };
 
-      const accessToken = createToken({ email }, process.env.JWT_SECRET, "15m");
-      const refreshToken = createToken({ email }, process.env.JWT_REFRESH_SECRET, "7d");
+      const tokenData = { email: user[0].email };
+
+      const accessToken = createAccessToken(tokenData);
+      const refreshToken = createRefreshToken(tokenData);
 
       if (req.headers["x-mobile"] === "true") {
-        const accessTokenMobile = createToken({ email }, process.env.JWT_SECRET);
         return res.json({
           success: "Login successful",
           email,
-          accessToken: accessTokenMobile,
+          accessToken: accessToken,
           refreshToken: refreshToken
         });
       }
@@ -130,13 +131,7 @@ class RESTuser {
     res.type("application/json");
 
     try {
-      const data = checkToken(req, process.env.JWT_SECRET);
-
-      if (!data) {
-        return res.status(401).json({ error: "Invalid token" });
-      }
-
-      const email = data.email;
+      const email = req.user.email;
 
       const user = await this.userDAO.getUserByEmail(email);
 
@@ -157,13 +152,7 @@ class RESTuser {
     res.type("application/json");
 
     try {
-      const data = checkToken(req, process.env.JWT_SECRET);
-
-      if (!data) {
-        return res.status(401).json({ error: "Invalid token" });
-      }
-
-      const email = data.email;
+      const email = req.user.email;
       const updatedUserData = req.body;
 
       const updatePromises = [];
@@ -198,13 +187,7 @@ class RESTuser {
     res.type("application/json");
 
     try {
-      const data = checkToken(req, process.env.JWT_SECRET);
-
-      if (!data) {
-        return res.status(401).json({ error: "Invalid token" });
-      }
-
-      const email = data.email;
+      const email = req.user.email;
 
       const response = await this.userDAO.delete(email);
 

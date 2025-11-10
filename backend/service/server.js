@@ -8,7 +8,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const cors = require("cors");
 const logger = require("../log/logger.js");
-const { createToken, checkToken } = require("./modules/jwtModul.js");
+const { createAccessToken, checkToken, createRefreshToken } = require("./modules/jwtModul.js");
 const RESTuser = require("./rest/RESTuser.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
@@ -66,15 +66,19 @@ server.post("/api/refresh", (req, res) => {
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const newAccessToken = createToken(
-      { email: decoded.email },
-      process.env.JWT_SECRET,
-      "15m"
-    );
+    
+    const tokenData = { email: decoded.email };
 
-    res.json({ accessToken: newAccessToken });
+    const newAccessToken = createAccessToken(tokenData);
+    const newRefreshToken = createRefreshToken(tokenData);
+
+    res.json({ 
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken 
+    });
+    
   } catch (e) {
-    return res.status(403).json({ error: "Invalid token" });
+    console.error("Refresh Token Verification Failed:", e);
   }
 });
 
@@ -101,10 +105,11 @@ server.all(/(.*)/, (req, res, next) => {
     try {      
           
         const tokenValid = checkToken(req, process.env.JWT_SECRET);
+        req.user = tokenValid;
                 
-        if (!tokenValid) {
-                res.status(406).json({ Error: "Invalid token!" }); 
-                return;
+        if (!tokenValid) {            
+            res.status(401).json({ Error: "Invalid token!" }); 
+            return;
         }
 
         const { method, originalUrl, ip } = req;
@@ -115,8 +120,8 @@ server.all(/(.*)/, (req, res, next) => {
         logger.info(`JWT valid | Time: ${timestamp} | Method: ${method} | Path: ${originalUrl} | OIB: ${oib} | Email: ${email} | Role: ${type} | IP: ${ip}`);
 
         next();
-    } catch (err) {
-        if (err.name === "TokenExpiredError") return res.status(422).json({ Error: "Token expired." });
+    } catch (err) {        
+        if (err.name === "TokenExpiredError") return res.status(401).json({ Error: "Token expired." });
         logger.error("Unhandled error: " + err);
         return res.status(500).json({ Error: "Internal server error." });
     }
