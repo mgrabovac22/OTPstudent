@@ -63,16 +63,6 @@ fun BottomNavigationBar(navController: NavController) {
                             .size(if (isHome) 72.dp else 48.dp) // veći container
                             .offset(y = if (isHome) (-10).dp else iconOffset)
                     ) {
-                        if (selected) {
-                            Box(
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .background(
-                                        color = Color.White,
-                                        shape = CircleShape
-                                    )
-                            )
-                        }
                         Icon(
                             imageVector = icon,
                             contentDescription = label,
@@ -89,11 +79,11 @@ fun BottomNavigationBar(navController: NavController) {
                     }
                 },
                 colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
+                    selectedIconColor = Color.White,
                     unselectedIconColor = Color.White,
-                    selectedTextColor = Color.Black,
+                    selectedTextColor = Color.White,
                     unselectedTextColor = Color.White,
-                    indicatorColor = Color.Transparent
+                    indicatorColor = Color(0xFF2E7D32)
                 )
             )
         }
