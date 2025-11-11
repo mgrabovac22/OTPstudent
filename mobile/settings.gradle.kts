@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "OTPstudent"
 include(":app")
- 
+include(":fingerprint_unlock")

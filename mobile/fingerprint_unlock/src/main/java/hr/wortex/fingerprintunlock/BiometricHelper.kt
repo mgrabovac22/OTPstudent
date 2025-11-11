@@ -1,4 +1,4 @@
-package hr.wortex.otpstudent.ui.login
+package hr.wortex.fingerprintunlock
 
 import android.content.Context
 import androidx.biometric.BiometricManager

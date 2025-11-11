@@ -29,8 +29,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import hr.wortex.otpstudent.R
 import hr.wortex.otpstudent.di.DependencyProvider
-import androidx.fragment.app.FragmentActivity
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
@@ -47,14 +45,6 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     var passwordVisible by remember { mutableStateOf(false) }
-
-    var canUseBiometric by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        val hasTokens = DependencyProvider.authRepository.hasSavedTokens()
-        canUseBiometric = hasTokens && BiometricHelper.isAvailable(context)
-    }
-
     var generalError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(uiState) {
@@ -196,41 +186,6 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
-            }
-
-            if (canUseBiometric) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = {
-                        val activity = context as? FragmentActivity
-                        if (activity != null) {
-                            BiometricHelper.prompt(
-                                activity = activity,
-                                onSuccess = {
-                                    scope.launch {
-                                        try {
-                                            DependencyProvider.userRepository.getCurrentUser()
-                                            navController.navigate("home_screen") {
-                                                popUpTo("login_screen") { inclusive = true }
-                                            }
-                                        } catch (e: Exception) {
-                                            generalError = "Sesija istekla. Prijavite se lozinkom."
-                                        }
-                                    }
-                                },
-                                onError = { msg -> generalError = msg }
-                            )
-                        } else {
-                            generalError = "Biometrija nije podržana u ovoj aktivnosti"
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 90.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
-                ) {
-                    Text(text = "Prijava otiskom prsta")
-                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
