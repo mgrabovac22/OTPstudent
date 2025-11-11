@@ -1,4 +1,4 @@
-package hr.wortex.fingerprintunlock
+package hr.wortex.unlock
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

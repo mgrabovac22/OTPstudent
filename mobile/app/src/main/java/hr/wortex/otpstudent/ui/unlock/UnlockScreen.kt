@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import hr.wortex.fingerprintunlock.UnlockScreen as BiometricUnlocker
+import hr.wortex.unlock.UnlockScreen as ModularUnlocker
 import hr.wortex.otpstudent.di.DependencyProvider
 
 @Composable
@@ -27,14 +27,13 @@ fun UnlockScreen(navController: NavController) {
 
     var generalError by remember { mutableStateOf<String?>(null) }
 
-    // Use the modular biometric unlocker
-    BiometricUnlocker(
+    // Use the modular unlocker
+    ModularUnlocker(
         onUnlockSuccess = { viewModel.verifySession() },
         onSessionError = { errorMsg -> generalError = errorMsg },
         checkHasTokens = { DependencyProvider.authRepository.hasSavedTokens() }
     )
 
-    // Handle UI state changes from the ViewModel
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is UnlockUiState.Success -> {
@@ -43,14 +42,20 @@ fun UnlockScreen(navController: NavController) {
                 }
             }
             is UnlockUiState.Error -> {
-                 // Set the error and trigger navigation via the generalError state
                  generalError = state.message
             }
             else -> { /* Idle or Loading */ }
         }
     }
 
-    // Display loading indicator and potential error
+    LaunchedEffect(generalError) {
+        if (generalError != null) {
+            navController.navigate("login_screen") {
+                popUpTo("unlock_screen") { inclusive = true }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -71,12 +76,6 @@ fun UnlockScreen(navController: NavController) {
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
-                 // This effect will trigger navigation as soon as the error is shown
-                 LaunchedEffect(it) {
-                    navController.navigate("login_screen") {
-                        popUpTo("unlock_screen") { inclusive = true }
-                    }
-                }
             }
         }
     }

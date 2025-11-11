@@ -1,4 +1,4 @@
-package hr.wortex.fingerprintunlock
+package hr.wortex.unlock
 
 import org.junit.Test
 

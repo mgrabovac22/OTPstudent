@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "hr.wortex.fingerprintunlock"
+    namespace = "hr.wortex.unlock"
     compileSdk = 34
 
     defaultConfig {

@@ -1,4 +1,4 @@
-package hr.wortex.fingerprintunlock
+package hr.wortex.unlock
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

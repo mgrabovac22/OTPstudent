@@ -1,4 +1,4 @@
-package hr.wortex.fingerprintunlock
+package hr.wortex.unlock
 
 import android.content.Context
 import androidx.biometric.BiometricManager
@@ -11,7 +11,7 @@ object BiometricHelper {
     fun isAvailable(context: Context): Boolean {
         val manager = BiometricManager.from(context)
         val can = manager.canAuthenticate(
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            BiometricManager.Authenticators.BIOMETRIC_STRONG
         )
         return can == BiometricManager.BIOMETRIC_SUCCESS
     }
@@ -45,8 +45,7 @@ object BiometricHelper {
             .setTitle(title)
             .setSubtitle(subtitle)
             .setAllowedAuthenticators(
-                BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                BiometricManager.Authenticators.BIOMETRIC_STRONG
             )
             .build()
 
