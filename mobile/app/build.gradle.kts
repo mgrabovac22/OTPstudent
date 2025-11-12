@@ -50,8 +50,12 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
 
-    implementation(project(":unlock"))
+    //runtimeOnly ensures the module is included in the final APK for startup initialization
+    runtimeOnly(project(":pin"))
+    runtimeOnly(project(":fingerprint"))
+
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")

@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "hr.wortex.unlock"
+    namespace = "hr.wortex.pin"
     compileSdk = 34
 
     defaultConfig {
@@ -24,21 +24,18 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        jvmTarget = "11"
     }
 }
 
 dependencies {
+    implementation(project(":core"))
+    implementation("androidx.startup:startup-runtime:1.1.1")
+
     implementation("androidx.core:core-ktx:1.10.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -55,5 +52,6 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
+    implementation("androidx.activity:activity-compose:1.7.0")
     implementation("androidx.activity:activity-ktx:1.7.0")
 }

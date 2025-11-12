@@ -1,4 +1,4 @@
-package hr.wortex.unlock
+package hr.wortex.pin
 
 import org.junit.Test
 
