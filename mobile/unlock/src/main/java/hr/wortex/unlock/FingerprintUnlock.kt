@@ -14,23 +14,19 @@ object FingerprintUnlock : UnlockMethod {
         activity: FragmentActivity,
         checkHasTokens: suspend () -> Boolean
     ): UnlockResult {
-        // Prvo provjeravamo imamo li uopće spremljenu sesiju
         if (!checkHasTokens()) {
             return UnlockResult.Error("Nema spremljene sesije za prijavu otiskom.")
         }
 
-        // Pretvaramo callback-based API u suspend funkciju
         return suspendCancellableCoroutine { continuation ->
             BiometricHelper.prompt(
                 activity = activity,
                 onSuccess = {
-                    // Nastavljamo coroutine s uspješnim rezultatom
                     if (continuation.isActive) {
                         continuation.resume(UnlockResult.Success)
                     }
                 },
                 onError = { msg ->
-                    // Nastavljamo coroutine s greškom
                     if (continuation.isActive) {
                         continuation.resume(UnlockResult.Error(msg))
                     }

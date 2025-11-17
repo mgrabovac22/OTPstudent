@@ -21,7 +21,6 @@ object PinUnlock : UnlockMethod {
             return UnlockResult.Error("Nema spremljene sesije za prijavu PIN-om.")
         }
 
-        // Pretvaramo callback-based API u suspend funkciju
         return suspendCancellableCoroutine { continuation ->
             val executor = ContextCompat.getMainExecutor(activity)
 

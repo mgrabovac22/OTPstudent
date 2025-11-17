@@ -31,7 +31,6 @@ fun UnlockScreen(navController: NavController) {
 
     var generalError by remember { mutableStateOf<String?>(null) }
 
-    // TODO: fix this hack of sorting methods by names
     val unlockMethods = UnlockMethodRegistry.methods.sortedBy { it.name }
 
     LaunchedEffect(unlockMethods.size) {
