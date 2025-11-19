@@ -1,0 +1,6 @@
+package hr.wortex.otpstudent.domain.model
+
+data class InternshipJob(
+    val id: Int,
+    val name: String
+)
