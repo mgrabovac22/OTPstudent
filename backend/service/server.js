@@ -10,6 +10,9 @@ const cors = require("cors");
 const logger = require("../log/logger.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("./modules/jwtModul.js");
 const RESTuser = require("./rest/RESTuser.js");
+const {uploadCV, uploadImage} = require("./rest/RESTupload.js");
+const RESTInstitution = require("./rest/RESTInstitution.js");
+const RESTinternship = require("./rest/RESTinternship.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -127,10 +130,21 @@ server.all(/(.*)/, (req, res, next) => {
     }
 });
 
-
 server.get("/api/current-user", restUser.getCurrentUser.bind(restUser));
 server.put("/api/update-user", restUser.updateUser.bind(restUser));
 server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
+server.post("/api/upload-cv", uploadCV.single("cv"), restUser.uploadCV.bind(restUser));
+server.post("/api/upload-image", uploadImage.single("image"), restUser.uploadImage.bind(restUser));
+
+server.get("/api/institutions", restInstitution.getAllInstitutions.bind(restInstitution));
+
+const restInternship = new RESTinternship();
+
+server.get("/api/internship/jobs", restInternship.listJobs.bind(restInternship));
+server.post("/api/internship/apply", restInternship.apply.bind(restInternship));
+server.get("/api/internship/applications", restInternship.listUserApplications.bind(restInternship));
+server.get("/api/internship/applications/:id", restInternship.getApplication.bind(restInternship));
+server.delete("/api/internship/applications/:id", restInternship.deleteApplication.bind(restInternship));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`
