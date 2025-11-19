@@ -39,6 +39,7 @@ fun ProfileScreen(
     val viewModel: ProfileViewModel = viewModel { ProfileViewModel(DependencyProvider.userRepository) }
     val uiState by viewModel.uiState.collectAsState()
 
+    var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf("") }
     var messageText by remember { mutableStateOf("") }
 
@@ -50,8 +51,8 @@ fun ProfileScreen(
         selectionMode = FilePickerSelectionMode.Single,
         onResult = { files ->
             if (files.isNotEmpty()) {
-                val uri = files.first().uri
-                selectedFileName = uri.getDisplayName(context) ?: ProfileStrings.DefaultPdfName
+                selectedUri = files.first().uri
+                selectedFileName = selectedUri!!.getDisplayName(context) ?: "cv.pdf"
             } else {
                 messageText = ProfileStrings.FileNotSelected
             }
@@ -69,17 +70,21 @@ fun ProfileScreen(
                 ProfileContent(
                     user = user,
                     selectedPdfName = selectedFileName,
-                    onUploadClick = {
-                        try {
-                            pickerLauncher.launch()
-                        } catch (e: Exception) {
-                            selectedFileName = ProfileStrings.EmulatorDummyFile
-                            messageText = ProfileStrings.EmulatorPickerMessage
-                        }
-                    },
-                    paddingValues = paddingValues,
                     messageText = messageText,
-                    onMessageChange = { messageText = it }
+                    paddingValues = paddingValues,
+                    onUploadClick = { pickerLauncher.launch() },
+                    onUploadToServer = {
+                        val uri = selectedUri
+                        if (uri != null) {
+                            val stream = context.contentResolver.openInputStream(uri)
+                            if (stream != null) {
+                                viewModel.uploadCV(stream)
+                                messageText = ProfileStrings.UploadSuccess
+                            } else {
+                                messageText = "Greška: nije moguće otvoriti PDF."
+                            }
+                        }
+                    }
                 )
             }
         }
@@ -158,7 +163,7 @@ private fun ProfileContent(
     onUploadClick: () -> Unit,
     paddingValues: PaddingValues,
     messageText: String,
-    onMessageChange: (String) -> Unit
+    onUploadToServer: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -215,11 +220,7 @@ private fun ProfileContent(
         // Upload button
         if (selectedPdfName.isNotEmpty()) {
             Button(
-                onClick = {
-                    scope.launch {
-                        onMessageChange(ProfileStrings.UploadSuccess)
-                    }
-                },
+                onClick = onUploadToServer,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.PaddingLarge),

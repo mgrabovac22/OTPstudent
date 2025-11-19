@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.InputStream
 
 sealed class ProfileUiState {
@@ -56,7 +59,32 @@ class ProfileViewModel(
     }
 
     fun uploadCV(inputStream: InputStream) {
-        //TODO: Implementirati spremanje CV-a na server
+        viewModelScope.launch {
+            try {
+                val bytes = inputStream.readBytes()
+
+                val requestBody = bytes.toRequestBody(
+                    "application/pdf".toMediaTypeOrNull()
+                )
+
+                val part = MultipartBody.Part.createFormData(
+                    "cv",
+                    "cv.pdf",
+                    requestBody
+                )
+
+                val success = userRepository.uploadCv(part)
+
+                if (success) {
+                    loadUserProfile()
+                } else {
+                    _uiState.value = ProfileUiState.Error("Upload nije uspio")
+                }
+
+            } catch (e: Exception) {
+                _uiState.value = ProfileUiState.Error("Greška tijekom uploadanja: ${e.message}")
+            }
+        }
     }
 
     fun openEditScreen(){
