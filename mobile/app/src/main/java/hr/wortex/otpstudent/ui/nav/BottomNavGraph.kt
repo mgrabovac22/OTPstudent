@@ -15,13 +15,14 @@ import hr.wortex.otpstudent.ui.profil.ProfileScreen
 import hr.wortex.otpstudent.ui.profil.EditProfileScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
+import hr.wortex.otpstudent.ui.unlock.UnlockScreen
 
 @Composable
 fun MainNavGraph(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBottomBar = currentRoute != "login_screen"
+    val showBottomBar = currentRoute != "login_screen" && currentRoute != "unlock_screen"
 
     Scaffold(
         bottomBar = {
@@ -32,7 +33,7 @@ fun MainNavGraph(navController: NavHostController) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "login_screen",
+            startDestination = "unlock_screen",
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("business_screen") {
@@ -53,6 +54,9 @@ fun MainNavGraph(navController: NavHostController) {
             }
             composable("edit_profile_screen") {
                 EditProfileScreen()
+            }
+            composable("unlock_screen") {
+                UnlockScreen(navController = navController)
             }
         }
     }
