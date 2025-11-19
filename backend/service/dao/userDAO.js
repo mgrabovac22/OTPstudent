@@ -63,7 +63,7 @@ class UserDAO {
         ];
 
         if (!allowedColumns.includes(element)) {
-            throw new Error('Invalid column name');
+            return;
         }
 
         const sql = `UPDATE User SET ${element} = ? WHERE email = ?`;

@@ -50,6 +50,11 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
+
+    //runtimeOnly ensures the module is included in the final APK for startup initialization
+    runtimeOnly(project(":pin"))
+    runtimeOnly(project(":fingerprint"))
 
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
@@ -79,6 +84,18 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.datastore:datastore-core:1.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+
+
+
+
+    implementation("com.mohamedrejeb.calf:calf-file-picker:0.5.3")
+    implementation("com.mohamedrejeb.calf:calf-file-picker-coil:0.5.1")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha08")
+
+
+
+
 
     implementation("androidx.biometric:biometric:1.1.0")
 }

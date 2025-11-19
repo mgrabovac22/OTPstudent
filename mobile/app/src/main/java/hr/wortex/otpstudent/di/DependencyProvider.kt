@@ -10,6 +10,7 @@ import hr.wortex.otpstudent.domain.repository.AuthRepository
 import hr.wortex.otpstudent.domain.repository.TokenRepository
 import hr.wortex.otpstudent.domain.repository.UserRepository
 import hr.wortex.otpstudent.domain.usecase.Login
+import hr.wortex.otpstudent.ui.unlock.UnlockViewModelFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -51,5 +52,6 @@ object DependencyProvider {
     val authRepository by lazy { AuthRepository(AuthRemoteDataSource(apiServiceWithInterceptor), storage) }
     val userRepository by lazy { UserRepository(UsersRemoteDataSource(apiServiceWithInterceptor)) }
     val login by lazy { Login(authRepository) }
-}
 
+    val unlockViewModelFactory by lazy { UnlockViewModelFactory(userRepository) }
+}

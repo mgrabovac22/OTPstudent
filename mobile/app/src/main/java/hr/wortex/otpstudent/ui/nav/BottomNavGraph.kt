@@ -12,15 +12,17 @@ import hr.wortex.otpstudent.ui.home.HomeScreen
 import hr.wortex.otpstudent.ui.login.LoginScreen
 import hr.wortex.otpstudent.ui.poslovi.BusinessScreen
 import hr.wortex.otpstudent.ui.profil.ProfileScreen
+import hr.wortex.otpstudent.ui.profil.EditProfileScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
+import hr.wortex.otpstudent.ui.unlock.UnlockScreen
 
 @Composable
 fun MainNavGraph(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBottomBar = currentRoute != "login_screen"
+    val showBottomBar = currentRoute != "login_screen" && currentRoute != "unlock_screen"
 
     Scaffold(
         bottomBar = {
@@ -31,7 +33,7 @@ fun MainNavGraph(navController: NavHostController) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "login_screen",
+            startDestination = "unlock_screen",
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("business_screen") {
@@ -41,12 +43,20 @@ fun MainNavGraph(navController: NavHostController) {
                 HomeScreen(innerPadding)
             }
             composable("profile_screen") {
-                ProfileScreen()
+                ProfileScreen(onEditProfile = {
+                    navController.navigate("edit_profile_screen")
+                })
             }
             composable("login_screen") {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     LoginScreen(paddingValues = innerPadding, navController = navController)
                 }
+            }
+            composable("edit_profile_screen") {
+                EditProfileScreen()
+            }
+            composable("unlock_screen") {
+                UnlockScreen(navController = navController)
             }
         }
     }
