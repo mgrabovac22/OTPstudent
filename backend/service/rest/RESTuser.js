@@ -216,6 +216,35 @@ class RESTuser {
       res.status(500).json({ error: "Internal server error" });
     }
   }
+
+  async uploadCV(req, res) {
+    res.type("application/json");
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded!" });
+        }
+
+        const email = req.user.email;
+        const namePart = email.split("@")[0];
+        const cvPath = `/resources/uploads/cv/${namePart}.pdf`;
+
+        const result = await this.userDAO.update(email, "cvPath", cvPath);
+
+        if (result) {
+            return res.status(200).json({
+                success: "CV uploaded successfully!",
+                cvPath: cvPath
+            });
+        }
+
+        res.status(400).json({ error: "Database update failed!" });
+
+    } catch (err) {
+        console.error("Error in uploadCV:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+  }
 }
 
 module.exports = RESTuser;
