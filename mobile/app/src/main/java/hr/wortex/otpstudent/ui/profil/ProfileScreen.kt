@@ -34,11 +34,6 @@ import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.domain.model.UserProfile
-import kotlinx.coroutines.launch
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import kotlinx.coroutines.CoroutineStart
-import kotlin.io.encoding.Base64
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +50,6 @@ fun ProfileScreen(
 
     val context = LocalContext.current
 
-    // File picker launcher (PDF)
     val pickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Custom(listOf("application/pdf")),
         selectionMode = FilePickerSelectionMode.Single,
@@ -101,9 +95,6 @@ fun ProfileScreen(
     }
 }
 
-// ----------------------------
-//  UI SUBCOMPONENTS
-// ----------------------------
 @Composable
 private fun ProfileLoadingScreen(padding: PaddingValues) {
     Box(
@@ -189,7 +180,6 @@ private fun ProfileContent(
     ) {
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // Avatar
         Box(
             modifier = Modifier
                 .size(Dimens.AvatarSize)
@@ -232,7 +222,6 @@ private fun ProfileContent(
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // Info cards
         ProfileInfoCard(user.email)
         Spacer(Modifier.height(Dimens.PaddingMedium))
         ProfileInfoCard(ProfileStrings.FacultyName)
@@ -243,12 +232,10 @@ private fun ProfileContent(
 
         Spacer(Modifier.height(Dimens.PaddingMedium))
 
-        // CV Upload
         UploadCvCard(selectedPdfName, onUploadClick)
 
         Spacer(Modifier.height(Dimens.PaddingMedium))
 
-        // Upload button
         if (selectedPdfName.isNotEmpty()) {
             Button(
                 onClick = onUploadToServer,
@@ -272,7 +259,6 @@ private fun ProfileContent(
             Spacer(Modifier.height(Dimens.PaddingSmall))
         }
 
-        // Poruka ispod forme
         if (messageText.isNotEmpty()) {
             Text(
                 text = messageText,
@@ -329,9 +315,6 @@ private fun ProfileInfoCard(text: String) {
     }
 }
 
-// ----------------------------
-//  HELPERS
-// ----------------------------
 private fun Uri.getDisplayName(context: Context): String? {
     return try {
         context.contentResolver.query(this, null, null, null, null)?.use { cursor ->
@@ -342,10 +325,6 @@ private fun Uri.getDisplayName(context: Context): String? {
         null
     }
 }
-
-
-// Privatni objekti za konstante, da se izbjegnu "magic numbers" i hardkodirani stringovi
-// ovo se moe staviti i u color.kt, theme.kt, type.kt
 
 public object ProfileColors {
     val LogoTeal = Color(0xFF006B5C)
@@ -367,10 +346,8 @@ public object Dimens {
 public object ProfileStrings {
     const val AppNameOtp = "OTP"
     const val AppNameStudent = "Student"
-    const val Back = "Natrag"
     const val Edit = "Uredi"
     const val ErrorPrefix = "Greška: "
-    const val DefaultPdfName = "odabrano_file.pdf"
     const val FileNotSelected = "Nije odabrana nijedna datoteka"
     const val UploadCv = "Upload CV"
     const val SelectCv = "Odaberi CV"
@@ -378,9 +355,5 @@ public object ProfileStrings {
     const val FacultyName = "Fakultet organizacije i informatike"
     const val YearNotSet = "Godina nije upisana"
     const val AreaNotSet = ""
-    const val EmulatorPickerMessage =
-        "Picker nije dostupan na emulatoru. Odabrana dummy datoteka."
-    const val EmulatorDummyFile = "dummy.pdf"
-
     fun yearOfStudyFormatted(year: Int) = "$year. godina"
 }

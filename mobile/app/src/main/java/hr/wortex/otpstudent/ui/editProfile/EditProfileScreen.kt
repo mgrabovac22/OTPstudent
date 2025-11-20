@@ -1,5 +1,6 @@
 package hr.wortex.otpstudent.ui.editProfile
 
+import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -39,7 +40,10 @@ import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.ui.profil.Dimens
 import hr.wortex.otpstudent.ui.profil.ProfileColors
+import hr.wortex.otpstudent.ui.profil.edit.DateUtils
+import hr.wortex.otpstudent.ui.profil.edit.EditProfileState
 import hr.wortex.otpstudent.ui.profil.edit.EditProfileViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +109,7 @@ fun EditProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileContent(
-    state: hr.wortex.otpstudent.ui.profil.edit.EditProfileState,
+    state: EditProfileState,
     viewModel: EditProfileViewModel
 ) {
     val context = LocalContext.current
@@ -119,7 +123,6 @@ fun EditProfileContent(
                 val uri = files.first().uri
 
                 val fileName = uri.getDisplayName(context) ?: "image.jpg"
-
                 val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
 
                 val inputStream = context.contentResolver.openInputStream(uri)
@@ -131,27 +134,32 @@ fun EditProfileContent(
         }
     )
 
-    var showDatePicker by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
+    val latestAllowed = remember { DateUtils.latestAllowedBirthDateMillis() }
 
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.onDateSelected(datePickerState.selectedDateMillis)
-                    showDatePicker = false
-                }) {
-                    Text("Odaberi", color = ProfileColors.LogoTeal)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Otkaži", color = Color.Gray)
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
+    val showDatePicker = remember(state.dateOfBirth, latestAllowed) {
+        {
+            val initialMillis = DateUtils.displayToMillis(state.dateOfBirth)?.let {
+                if (it <= latestAllowed) it else latestAllowed
+            } ?: latestAllowed
+
+            val cal = Calendar.getInstance().apply { timeInMillis = initialMillis }
+
+            DatePickerDialog(
+                context,
+                { _, year, month, dayOfMonth ->
+                    val selectedCal = Calendar.getInstance().apply {
+                        set(year, month, dayOfMonth, 0, 0, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    viewModel.onDateSelected(selectedCal.timeInMillis)
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+            ).apply {
+                datePicker.maxDate = latestAllowed
+                datePicker.minDate = Calendar.getInstance().apply { set(1900, Calendar.JANUARY, 1) }.timeInMillis
+            }.show()
         }
     }
 
@@ -215,6 +223,16 @@ fun EditProfileContent(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (state.imageError != null) {
+            Text(
+                text = state.imageError,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+        }
+
         Text("Klikni na sliku za promjenu", fontSize = 12.sp, color = ProfileColors.LogoTeal)
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
@@ -223,32 +241,37 @@ fun EditProfileContent(
             label = "Email",
             value = state.email,
             onValueChange = {},
-            readOnly = true
+            readOnly = true,
+            error = state.emailError
         )
 
         EditProfileTextField(
             label = "Ime",
             value = state.firstName,
-            onValueChange = viewModel::onFirstNameChange
+            onValueChange = viewModel::onFirstNameChange,
+            error = state.firstNameError
         )
 
         EditProfileTextField(
             label = "Prezime",
             value = state.lastName,
-            onValueChange = viewModel::onLastNameChange
+            onValueChange = viewModel::onLastNameChange,
+            error = state.lastNameError
         )
 
         EditProfileTextField(
             label = "Godina studija",
             value = state.yearOfStudy,
             onValueChange = viewModel::onYearOfStudyChange,
-            keyboardType = KeyboardType.Number
+            keyboardType = KeyboardType.Number,
+            error = state.yearOfStudyError
         )
 
         EditProfileTextField(
             label = "Smjer studija",
             value = state.areaOfStudy,
-            onValueChange = viewModel::onAreaOfStudyChange
+            onValueChange = viewModel::onAreaOfStudyChange,
+            error = state.areaOfStudyError
         )
 
         OutlinedTextField(
@@ -257,14 +280,14 @@ fun EditProfileContent(
             label = { Text("Datum rođenja") },
             readOnly = true,
             trailingIcon = {
-                IconButton(onClick = { showDatePicker = true }) {
+                IconButton(onClick = { showDatePicker() }) {
                     Icon(Icons.Default.DateRange, contentDescription = "Odaberi datum")
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .clickable { showDatePicker = true },
+                .clickable { showDatePicker() },
             enabled = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ProfileColors.LogoTeal,
@@ -304,9 +327,14 @@ fun EditProfileTextField(
     value: String,
     onValueChange: (String) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    error: String? = null
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -315,12 +343,25 @@ fun EditProfileTextField(
             singleLine = true,
             readOnly = readOnly,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            isError = error != null,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ProfileColors.LogoTeal,
                 focusedLabelColor = ProfileColors.LogoTeal,
-                cursorColor = ProfileColors.LogoTeal
+                cursorColor = ProfileColors.LogoTeal,
+                errorBorderColor = MaterialTheme.colorScheme.error,
+                errorLabelColor = MaterialTheme.colorScheme.error
             )
         )
+
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(top = 4.dp, start = 4.dp)
+            )
+        }
     }
 }
 
