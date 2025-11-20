@@ -1,6 +1,7 @@
 package hr.wortex.otpstudent.domain.repository
 
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
+import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.domain.model.User
 import hr.wortex.otpstudent.domain.repository.interfaces.IUserRepository
 import okhttp3.MultipartBody
@@ -25,5 +26,10 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
     override suspend fun uploadCv(filePart: MultipartBody.Part): Boolean {
         val response = remoteDataSource.uploadCv(filePart)
         return response["success"] != null
+    }
+
+    override suspend fun updateUser(token: String, update: UpdateUserDto): Boolean {
+        val response = remoteDataSource.updateUser(token, update)
+        return response.success != null
     }
 }
