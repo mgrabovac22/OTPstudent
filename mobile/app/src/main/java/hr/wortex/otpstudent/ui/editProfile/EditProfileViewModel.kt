@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
@@ -20,11 +21,15 @@ object DateUtils {
         timeZone = TimeZone.getTimeZone("UTC")
     }
 
+    fun convertMillisToDisplayDate(millis: Long): String {
+        return displayFormat.format(Date(millis))
+    }
+
     fun formatForDisplay(dateString: String?): String {
         if (dateString.isNullOrEmpty()) return ""
         return try {
             val date = when {
-                dateString.contains("T") -> isoFormat.parse(dateString.split(".")[0]) // Očisti milisekunde ako smetaju
+                dateString.contains("T") -> isoFormat.parse(dateString.split(".")[0])
                 else -> apiFormat.parse(dateString)
             }
             if (date != null) displayFormat.format(date) else dateString
@@ -56,7 +61,9 @@ data class EditProfileState(
 
     val email: String = "",
     val imageBase64: String? = null,
-    val cvPath: String? = null
+    val cvPath: String? = null,
+    val experiencePoints: Int = 0,
+    val unlockedLevel: Int = 1
 )
 
 class EditProfileViewModel(
@@ -83,9 +90,7 @@ class EditProfileViewModel(
                         lastName = user.lastName ?: "",
                         yearOfStudy = user.yearOfStudy?.toString() ?: "",
                         areaOfStudy = user.areaOfStudy ?: "",
-
                         dateOfBirth = DateUtils.formatForDisplay(user.dateOfBirth),
-
                         email = user.email ?: "",
                         imageBase64 = user.image,
                         cvPath = user.cvPath
@@ -119,6 +124,13 @@ class EditProfileViewModel(
         _uiState.update { it.copy(dateOfBirth = newValue) }
     }
 
+    fun onDateSelected(millis: Long?) {
+        millis?.let {
+            val formattedDate = DateUtils.convertMillisToDisplayDate(it)
+            _uiState.update { state -> state.copy(dateOfBirth = formattedDate) }
+        }
+    }
+
     fun saveProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -135,9 +147,7 @@ class EditProfileViewModel(
                     email = currentState.email,
                     yearOfStudy = yearInt,
                     areaOfStudy = currentState.areaOfStudy,
-
                     dateOfBirth = apiDateOfBirth,
-
                     imagePath = null,
                     cvPath = currentState.cvPath,
                     image = null

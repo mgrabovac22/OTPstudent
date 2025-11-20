@@ -3,6 +3,7 @@ package hr.wortex.otpstudent.ui.editProfile
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -92,12 +94,37 @@ fun EditProfileScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileContent(
     state: hr.wortex.otpstudent.ui.profil.edit.EditProfileState,
     viewModel: EditProfileViewModel
 ) {
     val scrollState = rememberScrollState()
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onDateSelected(datePickerState.selectedDateMillis)
+                    showDatePicker = false
+                }) {
+                    Text("Odaberi", color = ProfileColors.LogoTeal)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Otkaži", color = Color.Gray)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -140,9 +167,17 @@ fun EditProfileContent(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        Text("(Slika se ne može mijenjati)", fontSize = 12.sp, color = Color.Gray)
+        Text("(Slika se ne može mijenjati ovdje)", fontSize = 12.sp, color = Color.Gray)
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
+
+
+        EditProfileTextField(
+            label = "Email",
+            value = state.email,
+            onValueChange = {},
+            readOnly = true
+        )
 
         EditProfileTextField(
             label = "Ime",
@@ -169,10 +204,29 @@ fun EditProfileContent(
             onValueChange = viewModel::onAreaOfStudyChange
         )
 
-        EditProfileTextField(
-            label = "Datum rođenja (YYYY-MM-DD)",
+        OutlinedTextField(
             value = state.dateOfBirth,
-            onValueChange = viewModel::onDateOfBirthChange
+            onValueChange = { },
+            label = { Text("Datum rođenja") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Odaberi datum")
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .clickable { showDatePicker = true },
+            enabled = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = ProfileColors.LogoTeal,
+                focusedLabelColor = ProfileColors.LogoTeal,
+                cursorColor = ProfileColors.LogoTeal,
+                disabledTextColor = Color.Black,
+                disabledLabelColor = Color.Gray,
+                disabledBorderColor = Color.Gray
+            )
         )
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
@@ -202,7 +256,8 @@ fun EditProfileTextField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    readOnly: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         OutlinedTextField(
@@ -211,6 +266,7 @@ fun EditProfileTextField(
             label = { Text(label) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            readOnly = readOnly,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = ProfileColors.LogoTeal,
