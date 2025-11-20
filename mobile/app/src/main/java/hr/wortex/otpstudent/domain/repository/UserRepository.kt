@@ -43,4 +43,9 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
         val response = remoteDataSource.updateUser(body)
         return response["success"] != null
     }
+
+    override suspend fun uploadImage(filePart: MultipartBody.Part): Boolean {
+        val response = remoteDataSource.uploadImage(filePart)
+        return response["success"] != null
+    }
 }

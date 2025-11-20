@@ -272,6 +272,37 @@ class RESTuser {
         res.status(500).json({ error: "Internal server error" });
     }
   }
+
+  async uploadImage(req, res) {
+    res.type("application/json");
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No image uploaded!" });
+        }
+
+        const email = req.user.email;
+        const namePart = email.split("@")[0];
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        
+        const imagePath = `/resources/uploads/images/${namePart}${ext}`;
+
+        const result = await this.userDAO.update(email, "imagePath", imagePath);
+
+        if (result) {
+            return res.status(200).json({
+                success: "Image uploaded successfully!",
+                imagePath: imagePath
+            });
+        }
+
+        res.status(400).json({ error: "Database update failed!" });
+
+    } catch (err) {
+        console.error("Error in uploadImage:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+  }
 }
 
 

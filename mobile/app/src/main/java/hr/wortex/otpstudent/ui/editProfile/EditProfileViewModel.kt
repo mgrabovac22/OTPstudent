@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -128,6 +132,36 @@ class EditProfileViewModel(
         millis?.let {
             val formattedDate = DateUtils.convertMillisToDisplayDate(it)
             _uiState.update { state -> state.copy(dateOfBirth = formattedDate) }
+        }
+    }
+
+    fun uploadImage(inputStream: InputStream, fileName: String, mimeType: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val bytes = inputStream.readBytes()
+
+                val finalMimeType = mimeType.ifBlank { "image/jpeg" }
+
+                val requestBody = bytes.toRequestBody(finalMimeType.toMediaTypeOrNull())
+
+                val part = MultipartBody.Part.createFormData(
+                    "image",
+                    fileName,
+                    requestBody
+                )
+
+                val success = userRepository.uploadImage(part)
+
+                if (success) {
+                    loadUserData()
+                } else {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "Upload slike nije uspio.") }
+                }
+
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Greška: ${e.message}") }
+            }
         }
     }
 

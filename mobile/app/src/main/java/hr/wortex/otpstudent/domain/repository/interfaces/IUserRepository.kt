@@ -7,4 +7,5 @@ interface IUserRepository {
     suspend fun getCurrentUser(): User
     suspend fun uploadCv(filePart: MultipartBody.Part): Boolean
     suspend fun updateUser(user: User): Boolean
+    suspend fun uploadImage(filePart: MultipartBody.Part): Boolean
 }

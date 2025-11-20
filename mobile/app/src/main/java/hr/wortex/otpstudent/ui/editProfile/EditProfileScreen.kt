@@ -1,6 +1,9 @@
 package hr.wortex.otpstudent.ui.editProfile
 
+import android.content.Context
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,11 +27,15 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mohamedrejeb.calf.picker.FilePickerFileType
+import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.ui.profil.Dimens
 import hr.wortex.otpstudent.ui.profil.ProfileColors
@@ -100,7 +108,28 @@ fun EditProfileContent(
     state: hr.wortex.otpstudent.ui.profil.edit.EditProfileState,
     viewModel: EditProfileViewModel
 ) {
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
+
+    val imagePickerLauncher = rememberFilePickerLauncher(
+        type = FilePickerFileType.Image,
+        selectionMode = FilePickerSelectionMode.Single,
+        onResult = { files ->
+            if (files.isNotEmpty()) {
+                val uri = files.first().uri
+
+                val fileName = uri.getDisplayName(context) ?: "image.jpg"
+
+                val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+
+                val inputStream = context.contentResolver.openInputStream(uri)
+
+                if (inputStream != null) {
+                    viewModel.uploadImage(inputStream, fileName, mimeType)
+                }
+            }
+        }
+    )
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
@@ -139,7 +168,10 @@ fun EditProfileContent(
             modifier = Modifier
                 .size(Dimens.AvatarSize)
                 .clip(CircleShape)
-                .background(Color.LightGray),
+                .background(Color.LightGray)
+                .clickable {
+                    imagePickerLauncher.launch()
+                },
             contentAlignment = Alignment.Center
         ) {
             val imageBitmap: ImageBitmap? = remember(state.imageBase64) {
@@ -164,13 +196,28 @@ fun EditProfileContent(
             } else {
                 Text("?", fontSize = 48.sp)
             }
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Promijeni sliku",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                        .padding(4.dp)
+                        .size(16.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        Text("(Slika se ne može mijenjati ovdje)", fontSize = 12.sp, color = Color.Gray)
+        Text("Klikni na sliku za promjenu", fontSize = 12.sp, color = ProfileColors.LogoTeal)
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
-
 
         EditProfileTextField(
             label = "Email",
@@ -274,5 +321,16 @@ fun EditProfileTextField(
                 cursorColor = ProfileColors.LogoTeal
             )
         )
+    }
+}
+
+private fun Uri.getDisplayName(context: Context): String? {
+    return try {
+        context.contentResolver.query(this, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && nameIndex != -1) cursor.getString(nameIndex) else null
+        }
+    } catch (e: Exception) {
+        null
     }
 }
