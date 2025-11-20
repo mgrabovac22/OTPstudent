@@ -178,12 +178,22 @@ class RESTuser {
     res.type("application/json");
 
     try {
-      const email = req.user.email;
+      const email = req.user.email; // Email izvađen iz tokena
       const updatedUserData = req.body;
 
       const updatePromises = [];
 
       for (const [key, value] of Object.entries(updatedUserData)) {
+        if (value === null || value === undefined || value === "") {
+            continue;
+        }
+        
+        const allowedColumns = [
+            'firstName', 'lastName', 'yearOfStudy', 'areaOfStudy', 
+            'password', 'imagePath', 'cvPath', 'dateOfBirth'
+        ];
+        if (!allowedColumns.includes(key)) continue;
+
         if (key === 'password') {
           const saltRounds = 10;
           const hashedPassword = await bcrypt.hash(value, saltRounds);
@@ -194,8 +204,11 @@ class RESTuser {
         updatePromises.push(this.userDAO.update(email, key, value));
       }
 
-      const results = await Promise.all(updatePromises);
+      if (updatePromises.length === 0) {
+         return res.status(200).json({ success: "Nothing to update or invalid fields." });
+      }
 
+      const results = await Promise.all(updatePromises);
       const hasFailures = results.some(result => !result);
 
       if (!hasFailures) {
