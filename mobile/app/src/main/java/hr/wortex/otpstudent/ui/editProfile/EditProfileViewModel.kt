@@ -3,28 +3,57 @@ package hr.wortex.otpstudent.ui.profil.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hr.wortex.otpstudent.domain.model.User
-import hr.wortex.otpstudent.domain.model.UserProfile
 import hr.wortex.otpstudent.domain.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
-// Stanje koje drži podatke forme
+object DateUtils {
+    private val apiFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val displayFormat = SimpleDateFormat("dd.MM.yyyy.", Locale.getDefault())
+    private val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
+
+    fun formatForDisplay(dateString: String?): String {
+        if (dateString.isNullOrEmpty()) return ""
+        return try {
+            val date = when {
+                dateString.contains("T") -> isoFormat.parse(dateString.split(".")[0]) // Očisti milisekunde ako smetaju
+                else -> apiFormat.parse(dateString)
+            }
+            if (date != null) displayFormat.format(date) else dateString
+        } catch (e: Exception) {
+            dateString
+        }
+    }
+
+    fun formatForApi(displayString: String): String {
+        return try {
+            val date = displayFormat.parse(displayString)
+            if (date != null) apiFormat.format(date) else displayString
+        } catch (e: Exception) {
+            displayString
+        }
+    }
+}
+
 data class EditProfileState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isSaved: Boolean = false,
 
-    // Polja forme
     val firstName: String = "",
     val lastName: String = "",
-    val yearOfStudy: String = "", // String radi lakšeg unosa u TextField
+    val yearOfStudy: String = "",
     val areaOfStudy: String = "",
     val dateOfBirth: String = "",
 
-    // Read-only podaci za prikaz (npr. slika, email)
     val email: String = "",
     val imageBase64: String? = null,
     val cvPath: String? = null
@@ -54,7 +83,9 @@ class EditProfileViewModel(
                         lastName = user.lastName ?: "",
                         yearOfStudy = user.yearOfStudy?.toString() ?: "",
                         areaOfStudy = user.areaOfStudy ?: "",
-                        dateOfBirth = user.dateOfBirth ?: "",
+
+                        dateOfBirth = DateUtils.formatForDisplay(user.dateOfBirth),
+
                         email = user.email ?: "",
                         imageBase64 = user.image,
                         cvPath = user.cvPath
@@ -68,7 +99,6 @@ class EditProfileViewModel(
         }
     }
 
-    // Metode za ažuriranje stanja forme kad korisnik tipka
     fun onFirstNameChange(newValue: String) {
         _uiState.update { it.copy(firstName = newValue) }
     }
@@ -78,7 +108,6 @@ class EditProfileViewModel(
     }
 
     fun onYearOfStudyChange(newValue: String) {
-        // Dozvoli samo brojeve ako želiš, ili ostavi kao string pa parsiraj kod spremanja
         _uiState.update { it.copy(yearOfStudy = newValue) }
     }
 
@@ -96,20 +125,22 @@ class EditProfileViewModel(
 
             try {
                 val currentState = _uiState.value
-
-                // Parsiranje godine studija
                 val yearInt = currentState.yearOfStudy.toIntOrNull() ?: 0
+
+                val apiDateOfBirth = DateUtils.formatForApi(currentState.dateOfBirth)
 
                 val domainUser = User(
                     firstName = currentState.firstName,
                     lastName = currentState.lastName,
-                    email = currentState.email, // Email se obično ne mijenja ovdje, ali ga šaljemo
+                    email = currentState.email,
                     yearOfStudy = yearInt,
                     areaOfStudy = currentState.areaOfStudy,
-                    dateOfBirth = currentState.dateOfBirth,
-                    imagePath = null, // Ne mijenjamo path
+
+                    dateOfBirth = apiDateOfBirth,
+
+                    imagePath = null,
                     cvPath = currentState.cvPath,
-                    image = null // Ne šaljemo base64 natrag na update
+                    image = null
                 )
 
                 val success = userRepository.updateUser(domainUser)
@@ -126,7 +157,6 @@ class EditProfileViewModel(
         }
     }
 
-    // Resetiranje statusa spremanja da se navigacija ne bi okinula više puta
     fun onSavedHandled() {
         _uiState.update { it.copy(isSaved = false) }
     }

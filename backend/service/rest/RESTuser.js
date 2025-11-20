@@ -178,7 +178,7 @@ class RESTuser {
     res.type("application/json");
 
     try {
-      const email = req.user.email; // Email izvađen iz tokena
+      const email = req.user.email;
       const updatedUserData = req.body;
 
       const updatePromises = [];
@@ -193,7 +193,10 @@ class RESTuser {
             'password', 'imagePath', 'cvPath', 'dateOfBirth'
         ];
         if (!allowedColumns.includes(key)) continue;
-
+        let valueToSave = value;
+        if (key === 'dateOfBirth' && value.includes('T')) {
+            valueToSave = value.split('T')[0];
+        }
         if (key === 'password') {
           const saltRounds = 10;
           const hashedPassword = await bcrypt.hash(value, saltRounds);
@@ -201,7 +204,7 @@ class RESTuser {
           continue;
         }
         
-        updatePromises.push(this.userDAO.update(email, key, value));
+        updatePromises.push(this.userDAO.update(email, key, valueToSave));
       }
 
       if (updatePromises.length === 0) {

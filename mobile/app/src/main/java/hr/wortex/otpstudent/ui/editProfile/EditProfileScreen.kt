@@ -34,17 +34,15 @@ import hr.wortex.otpstudent.ui.profil.edit.EditProfileViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
-    padding: PaddingValues, // Dodano da odgovara pozivu u MainNavGraph
-    onNavigateBack: () -> Unit = {} // Ovo bi trebao proslijediti iz navigacije ako želiš funkcionalan back
+    padding: PaddingValues,
+    onNavigateBack: () -> Unit = {}
 ) {
-    // Ručna instanca ViewModela s dependencyjem kao u ProfileScreenu
     val viewModel: EditProfileViewModel = viewModel {
         EditProfileViewModel(DependencyProvider.userRepository)
     }
 
     val state by viewModel.uiState.collectAsState()
 
-    // Ako je spremanje uspješno, vrati se natrag (ili prikaži toast)
     LaunchedEffect(state.isSaved) {
         if (state.isSaved) {
             viewModel.onSavedHandled()
@@ -80,7 +78,6 @@ fun EditProfileScreen(
                 )
             }
 
-            // Prikaz greške ako postoji
             state.errorMessage?.let { msg ->
                 Text(
                     text = msg,
@@ -111,7 +108,6 @@ fun EditProfileContent(
     ) {
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // --- SLIKA PROFILA (Samo prikaz, kopirano iz ProfileScreen) ---
         Box(
             modifier = Modifier
                 .size(Dimens.AvatarSize)
@@ -148,8 +144,6 @@ fun EditProfileContent(
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // --- FORMA ---
-
         EditProfileTextField(
             label = "Ime",
             value = state.firstName,
@@ -183,7 +177,6 @@ fun EditProfileContent(
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // --- GUMB ZA SPREMANJE ---
         Button(
             onClick = { viewModel.saveProfile() },
             modifier = Modifier
