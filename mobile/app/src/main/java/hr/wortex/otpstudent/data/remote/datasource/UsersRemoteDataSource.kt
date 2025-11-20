@@ -20,4 +20,8 @@ class UsersRemoteDataSource(
     override suspend fun updateUser(body: UpdateUserDto): Map<String, String> {
         return api.updateUser(body)
     }
+
+    override suspend fun uploadImage(filePart: MultipartBody.Part): Map<String, String> {
+        return api.uploadImage(filePart)
+    }
 }

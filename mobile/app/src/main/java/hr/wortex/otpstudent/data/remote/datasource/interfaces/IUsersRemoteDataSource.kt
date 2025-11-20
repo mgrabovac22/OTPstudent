@@ -8,4 +8,5 @@ interface IUsersRemoteDataSource {
     suspend fun getCurrentUser(): UserDto
     suspend fun uploadCv(filePart: MultipartBody.Part): Map<String, String>
     suspend fun updateUser(body: UpdateUserDto): Map<String, String>
+    suspend fun uploadImage(filePart: MultipartBody.Part): Map<String, String>
 }

@@ -39,4 +39,10 @@ interface IOtpApiService {
     suspend fun updateUser(
         @Body body: UpdateUserDto
     ): Map<String, String>
+
+    @Multipart
+    @POST("api/upload-image")
+    suspend fun uploadImage(
+        @Part image: MultipartBody.Part
+    ): Map<String, String>
 }
