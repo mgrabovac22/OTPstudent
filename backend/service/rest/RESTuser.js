@@ -184,6 +184,19 @@ class RESTuser {
       const updatePromises = [];
 
       for (const [key, value] of Object.entries(updatedUserData)) {
+        if (value === null || value === undefined || value === "") {
+            continue;
+        }
+        
+        const allowedColumns = [
+            'firstName', 'lastName', 'yearOfStudy', 'areaOfStudy', 
+            'password', 'imagePath', 'cvPath', 'dateOfBirth'
+        ];
+        if (!allowedColumns.includes(key)) continue;
+        let valueToSave = value;
+        if (key === 'dateOfBirth' && value.includes('T')) {
+            valueToSave = value.split('T')[0];
+        }
         if (key === 'password') {
           const saltRounds = 10;
           const hashedPassword = await bcrypt.hash(value, saltRounds);
@@ -191,11 +204,14 @@ class RESTuser {
           continue;
         }
         
-        updatePromises.push(this.userDAO.update(email, key, value));
+        updatePromises.push(this.userDAO.update(email, key, valueToSave));
+      }
+
+      if (updatePromises.length === 0) {
+         return res.status(200).json({ success: "Nothing to update or invalid fields." });
       }
 
       const results = await Promise.all(updatePromises);
-
       const hasFailures = results.some(result => !result);
 
       if (!hasFailures) {

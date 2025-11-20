@@ -28,8 +28,19 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
         return response["success"] != null
     }
 
-    override suspend fun updateUser(token: String, update: UpdateUserDto): Boolean {
-        val response = remoteDataSource.updateUser(token, update)
-        return response.success != null
+    override suspend fun updateUser(user: User): Boolean {
+        val body = UpdateUserDto(
+            firstName = user.firstName,
+            lastName = user.lastName,
+            yearOfStudy = user.yearOfStudy,
+            areaOfStudy = user.areaOfStudy,
+            dateOfBirth = user.dateOfBirth,
+            imagePath = user.imagePath,
+            cvPath = user.cvPath,
+            password = null
+        )
+
+        val response = remoteDataSource.updateUser(body)
+        return response["success"] != null
     }
 }
