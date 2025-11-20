@@ -8,5 +8,6 @@ data class User(
     val areaOfStudy: String?,
     val imagePath: String?,
     val cvPath: String?,
-    val dateOfBirth: String?
+    val dateOfBirth: String?,
+    val image: String?
 )

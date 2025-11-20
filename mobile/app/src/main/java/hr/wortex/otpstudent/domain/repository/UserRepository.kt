@@ -17,7 +17,8 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
             areaOfStudy = dto.areaOfStudy,
             imagePath = dto.imagePath,
             cvPath = dto.cvPath,
-            dateOfBirth = dto.dateOfBirth
+            dateOfBirth = dto.dateOfBirth,
+            image = dto.image
         )
     }
 

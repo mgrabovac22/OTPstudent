@@ -1,5 +1,6 @@
 package hr.wortex.otpstudent.ui.profil
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hr.wortex.otpstudent.domain.model.UserProfile
@@ -44,8 +45,11 @@ class ProfileViewModel(
                     yearOfStudy = user.yearOfStudy,
                     areaOfStudy = user.areaOfStudy,
                     imagePath = user.imagePath,
-                    cvPath = user.cvPath
+                    cvPath = user.cvPath,
+                    image = user.image
                 )
+
+                Log.d("PROFILE_IMAGE", "Image = ${user.image?.take(100)}")
 
                 _uiState.value = ProfileUiState.Success(userProfile)
             } catch (e: Exception) {

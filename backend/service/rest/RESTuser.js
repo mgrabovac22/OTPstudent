@@ -1,6 +1,8 @@
 const UserDAO = require("../dao/userDAO.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("../modules/jwtModul.js");
 const bcrypt = require("bcrypt");
+const fs = require("node:fs");
+const path = require("node:path");
 
 class RESTuser {
 
@@ -156,7 +158,16 @@ class RESTuser {
 
       delete user[0].password;
 
-      res.status(200).json(user[0]);
+      let imageBase64 = null;
+
+      if (user[0].imagePath) {
+          imageBase64 = loadImageBase64(user[0].imagePath);
+      }
+
+      res.status(200).json({
+          ...user[0],
+          image: imageBase64
+      });
     } catch (err) {
       console.error("Error in getCurrentUser:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -245,6 +256,32 @@ class RESTuser {
         res.status(500).json({ error: "Internal server error" });
     }
   }
+}
+
+
+function loadImageBase64(relativePath) {
+    try {
+        const absPath = path.join(__dirname, "..", "..", relativePath);
+
+        const dir = path.dirname(absPath);
+
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+            console.log("Created missing image directory:", dir);
+        }
+
+        if (!fs.existsSync(absPath)) {
+            console.warn("Image file does not exist:", absPath);
+            return null;
+        }
+
+        const imageBuffer = fs.readFileSync(absPath);
+        const extension = path.extname(relativePath).substring(1);
+        return `data:image/${extension};base64,${imageBuffer.toString("base64")}`;
+    } catch (err) {
+        console.error("Greška kod učitavanja slike:", err);
+        return null;
+    }
 }
 
 module.exports = RESTuser;

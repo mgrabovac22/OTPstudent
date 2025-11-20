@@ -7,5 +7,6 @@ data class UserProfile(
     val yearOfStudy: Int?,
     val areaOfStudy: String?,
     val imagePath: String?,
-    val cvPath: String?
+    val cvPath: String?,
+    val image: String?
 )
