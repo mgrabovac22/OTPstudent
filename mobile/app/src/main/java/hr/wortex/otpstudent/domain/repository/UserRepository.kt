@@ -3,6 +3,7 @@ package hr.wortex.otpstudent.domain.repository
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
 import hr.wortex.otpstudent.domain.model.User
 import hr.wortex.otpstudent.domain.repository.interfaces.IUserRepository
+import okhttp3.MultipartBody
 
 class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
     IUserRepository {
@@ -16,7 +17,13 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
             areaOfStudy = dto.areaOfStudy,
             imagePath = dto.imagePath,
             cvPath = dto.cvPath,
-            dateOfBirth = dto.dateOfBirth
+            dateOfBirth = dto.dateOfBirth,
+            image = dto.image
         )
+    }
+
+    override suspend fun uploadCv(filePart: MultipartBody.Part): Boolean {
+        val response = remoteDataSource.uploadCv(filePart)
+        return response["success"] != null
     }
 }
