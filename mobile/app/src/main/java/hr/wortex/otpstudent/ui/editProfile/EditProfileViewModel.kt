@@ -14,6 +14,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.InputStream
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -50,6 +51,47 @@ object DateUtils {
             displayString
         }
     }
+
+    fun latestAllowedBirthDateMillis(): Long {
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.YEAR, -18)
+        return cal.timeInMillis
+    }
+
+    fun todayMillis(): Long = Calendar.getInstance().timeInMillis
+
+    fun isAtLeast18(displayDate: String): Boolean {
+        return try {
+            val dob = displayFormat.parse(displayDate) ?: return false
+            val calDob = Calendar.getInstance().apply { time = dob }
+            val today = Calendar.getInstance()
+
+            var age = today.get(Calendar.YEAR) - calDob.get(Calendar.YEAR)
+            if (today.get(Calendar.DAY_OF_YEAR) < calDob.get(Calendar.DAY_OF_YEAR)) {
+                age--
+            }
+            age >= 18
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun isNotInFuture(displayDate: String): Boolean {
+        return try {
+            val dob = displayFormat.parse(displayDate) ?: return false
+            dob.time <= todayMillis()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun displayToMillis(displayString: String): Long? {
+        return try {
+            displayFormat.parse(displayString)?.time
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
 
 data class EditProfileState(
@@ -67,7 +109,15 @@ data class EditProfileState(
     val imageBase64: String? = null,
     val cvPath: String? = null,
     val experiencePoints: Int = 0,
-    val unlockedLevel: Int = 1
+    val unlockedLevel: Int = 1,
+
+    val imageError: String? = null,
+    val firstNameError: String? = null,
+    val lastNameError: String? = null,
+    val yearOfStudyError: String? = null,
+    val areaOfStudyError: String? = null,
+    val dateOfBirthError: String? = null,
+    val emailError: String? = null
 )
 
 class EditProfileViewModel(
@@ -97,7 +147,16 @@ class EditProfileViewModel(
                         dateOfBirth = DateUtils.formatForDisplay(user.dateOfBirth),
                         email = user.email ?: "",
                         imageBase64 = user.image,
-                        cvPath = user.cvPath
+                        cvPath = user.cvPath,
+
+                        firstNameError = null,
+                        lastNameError = null,
+                        yearOfStudyError = null,
+                        areaOfStudyError = null,
+                        dateOfBirthError = null,
+                        emailError = null,
+                        errorMessage = null,
+                        imageError = null
                     )
                 }
             } catch (e: Exception) {
@@ -109,39 +168,65 @@ class EditProfileViewModel(
     }
 
     fun onFirstNameChange(newValue: String) {
-        _uiState.update { it.copy(firstName = newValue) }
+        _uiState.update { it.copy(firstName = newValue, firstNameError = null) }
     }
 
     fun onLastNameChange(newValue: String) {
-        _uiState.update { it.copy(lastName = newValue) }
+        _uiState.update { it.copy(lastName = newValue, lastNameError = null) }
     }
 
     fun onYearOfStudyChange(newValue: String) {
-        _uiState.update { it.copy(yearOfStudy = newValue) }
+        _uiState.update { it.copy(yearOfStudy = newValue, yearOfStudyError = null) }
     }
 
     fun onAreaOfStudyChange(newValue: String) {
-        _uiState.update { it.copy(areaOfStudy = newValue) }
+        _uiState.update { it.copy(areaOfStudy = newValue, areaOfStudyError = null) }
     }
 
     fun onDateOfBirthChange(newValue: String) {
-        _uiState.update { it.copy(dateOfBirth = newValue) }
+        _uiState.update { it.copy(dateOfBirth = newValue, dateOfBirthError = null) }
     }
 
     fun onDateSelected(millis: Long?) {
         millis?.let {
             val formattedDate = DateUtils.convertMillisToDisplayDate(it)
-            _uiState.update { state -> state.copy(dateOfBirth = formattedDate) }
+            _uiState.update { state -> state.copy(dateOfBirth = formattedDate, dateOfBirthError = null) }
         }
     }
 
     fun uploadImage(inputStream: InputStream, fileName: String, mimeType: String) {
         viewModelScope.launch {
+
+            val lowerName = fileName.lowercase(Locale.ROOT)
+            val lowerMime = mimeType.lowercase(Locale.ROOT)
+
+            val isJpgOrPng = lowerName.endsWith(".jpg") ||
+                    lowerName.endsWith(".jpeg") ||
+                    lowerName.endsWith(".png") ||
+                    lowerMime == "image/jpg" ||
+                    lowerMime == "image/jpeg" ||
+                    lowerMime == "image/png"
+
+            if (!isJpgOrPng) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        imageError = "Dozvoljeni formati slike su JPG i PNG.",
+                        errorMessage = null
+                    )
+                }
+                return@launch
+            }
+
             _uiState.update { it.copy(isLoading = true) }
+
             try {
                 val bytes = inputStream.readBytes()
 
-                val finalMimeType = mimeType.ifBlank { "image/jpeg" }
+                val finalMimeType = when {
+                    lowerName.endsWith(".png") || lowerMime == "image/png" -> "image/png"
+                    else -> "image/jpeg"
+                }
 
                 val requestBody = bytes.toRequestBody(finalMimeType.toMediaTypeOrNull())
 
@@ -154,9 +239,15 @@ class EditProfileViewModel(
                 val success = userRepository.uploadImage(part)
 
                 if (success) {
+                    _uiState.update { it.copy(imageError = null) }
                     loadUserData()
                 } else {
-                    _uiState.update { it.copy(isLoading = false, errorMessage = "Upload slike nije uspio.") }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            imageError = "Upload slike nije uspio."
+                        )
+                    }
                 }
 
             } catch (e: Exception) {
@@ -165,22 +256,109 @@ class EditProfileViewModel(
         }
     }
 
+    private fun validateAndUpdateState(): Boolean {
+        val state = _uiState.value
+
+        var firstNameError: String? = null
+        var lastNameError: String? = null
+        var yearOfStudyError: String? = null
+        var areaOfStudyError: String? = null
+        var dateOfBirthError: String? = null
+        var emailError: String? = null
+
+        var hasError = false
+
+        val firstName = state.firstName.trim()
+        if (firstName.isEmpty()) {
+            firstNameError = "Unesi ime."
+            hasError = true
+        } else if (firstName.length < 2) {
+            firstNameError = "Ime mora imati barem 2 slova."
+            hasError = true
+        }
+
+        val lastName = state.lastName.trim()
+        if (lastName.isEmpty()) {
+            lastNameError = "Unesi prezime."
+            hasError = true
+        } else if (lastName.length < 2) {
+            lastNameError = "Prezime mora imati barem 2 slova."
+            hasError = true
+        }
+
+        val email = state.email.trim()
+        if (email.isEmpty()) {
+            emailError = "Email nedostaje."
+            hasError = true
+        } else if (!email.endsWith("@student.foi.hr")) {
+            emailError = "Email mora završavati s @student.foi.hr."
+            hasError = true
+        }
+
+        val year = state.yearOfStudy.toIntOrNull()
+        if (year == null) {
+            yearOfStudyError = "Godina studija mora biti broj."
+            hasError = true
+        } else if (year !in 1..8) {
+            yearOfStudyError = "Godina studija mora biti između 1 i 8."
+            hasError = true
+        }
+
+        val area = state.areaOfStudy.trim()
+        if (area.isEmpty()) {
+            areaOfStudyError = "Unesi smjer studija."
+            hasError = true
+        }
+
+        val dob = state.dateOfBirth.trim()
+        if (dob.isEmpty()) {
+            dateOfBirthError = "Unesi datum rođenja."
+            hasError = true
+        } else {
+            if (!DateUtils.isNotInFuture(dob)) {
+                dateOfBirthError = "Datum rođenja ne može biti u budućnosti."
+                hasError = true
+            } else if (!DateUtils.isAtLeast18(dob)) {
+                dateOfBirthError = "Moraš imati najmanje 18 godina."
+                hasError = true
+            }
+        }
+
+        _uiState.update {
+            it.copy(
+                firstNameError = firstNameError,
+                lastNameError = lastNameError,
+                yearOfStudyError = yearOfStudyError,
+                areaOfStudyError = areaOfStudyError,
+                dateOfBirthError = dateOfBirthError,
+                emailError = emailError,
+                errorMessage = null
+
+            )
+        }
+
+        return !hasError
+    }
+
     fun saveProfile() {
         viewModelScope.launch {
+            if (!validateAndUpdateState()) {
+                return@launch
+            }
+
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             try {
                 val currentState = _uiState.value
                 val yearInt = currentState.yearOfStudy.toIntOrNull() ?: 0
-
                 val apiDateOfBirth = DateUtils.formatForApi(currentState.dateOfBirth)
 
                 val domainUser = User(
-                    firstName = currentState.firstName,
-                    lastName = currentState.lastName,
-                    email = currentState.email,
+                    firstName = currentState.firstName.trim(),
+                    lastName = currentState.lastName.trim(),
+                    email = currentState.email.trim(),
                     yearOfStudy = yearInt,
-                    areaOfStudy = currentState.areaOfStudy,
+                    areaOfStudy = currentState.areaOfStudy.trim(),
                     dateOfBirth = apiDateOfBirth,
                     imagePath = null,
                     cvPath = currentState.cvPath,
@@ -205,3 +383,4 @@ class EditProfileViewModel(
         _uiState.update { it.copy(isSaved = false) }
     }
 }
+
