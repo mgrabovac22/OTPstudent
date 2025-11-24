@@ -12,7 +12,7 @@ import hr.wortex.otpstudent.ui.home.HomeScreen
 import hr.wortex.otpstudent.ui.login.LoginScreen
 import hr.wortex.otpstudent.ui.poslovi.BusinessScreen
 import hr.wortex.otpstudent.ui.profil.ProfileScreen
-import hr.wortex.otpstudent.ui.profil.EditProfileScreen
+import hr.wortex.otpstudent.ui.editProfile.EditProfileScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import hr.wortex.otpstudent.ui.registration.RegistrationScreen
@@ -61,7 +61,10 @@ fun MainNavGraph(navController: NavHostController) {
             }
 
             composable("edit_profile_screen") {
-                EditProfileScreen()
+                EditProfileScreen(
+                    padding = innerPadding,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable("unlock_screen") {
                 UnlockScreen(navController = navController)

@@ -1,8 +1,10 @@
 package hr.wortex.otpstudent.ui.profil
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,7 +34,6 @@ import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.domain.model.UserProfile
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,19 +44,19 @@ fun ProfileScreen(
     val viewModel: ProfileViewModel = viewModel { ProfileViewModel(DependencyProvider.userRepository) }
     val uiState by viewModel.uiState.collectAsState()
 
+    var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf("") }
     var messageText by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
-    // File picker launcher (PDF)
     val pickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Custom(listOf("application/pdf")),
         selectionMode = FilePickerSelectionMode.Single,
         onResult = { files ->
             if (files.isNotEmpty()) {
-                val uri = files.first().uri
-                selectedFileName = uri.getDisplayName(context) ?: ProfileStrings.DefaultPdfName
+                selectedUri = files.first().uri
+                selectedFileName = selectedUri!!.getDisplayName(context) ?: "cv.pdf"
             } else {
                 messageText = ProfileStrings.FileNotSelected
             }
@@ -69,26 +74,27 @@ fun ProfileScreen(
                 ProfileContent(
                     user = user,
                     selectedPdfName = selectedFileName,
-                    onUploadClick = {
-                        try {
-                            pickerLauncher.launch()
-                        } catch (e: Exception) {
-                            selectedFileName = ProfileStrings.EmulatorDummyFile
-                            messageText = ProfileStrings.EmulatorPickerMessage
-                        }
-                    },
-                    paddingValues = paddingValues,
                     messageText = messageText,
-                    onMessageChange = { messageText = it }
+                    paddingValues = paddingValues,
+                    onUploadClick = { pickerLauncher.launch() },
+                    onUploadToServer = {
+                        val uri = selectedUri
+                        if (uri != null) {
+                            val stream = context.contentResolver.openInputStream(uri)
+                            if (stream != null) {
+                                viewModel.uploadCV(stream)
+                                messageText = ProfileStrings.UploadSuccess
+                            } else {
+                                messageText = "Greška: nije moguće otvoriti PDF."
+                            }
+                        }
+                    }
                 )
             }
         }
     }
 }
 
-// ----------------------------
-//  UI SUBCOMPONENTS
-// ----------------------------
 @Composable
 private fun ProfileLoadingScreen(padding: PaddingValues) {
     Box(
@@ -158,7 +164,7 @@ private fun ProfileContent(
     onUploadClick: () -> Unit,
     paddingValues: PaddingValues,
     messageText: String,
-    onMessageChange: (String) -> Unit
+    onUploadToServer: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -174,15 +180,35 @@ private fun ProfileContent(
     ) {
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // Avatar
         Box(
             modifier = Modifier
                 .size(Dimens.AvatarSize)
                 .clip(CircleShape)
-                .background(ProfileColors.AvatarBackground),
+                .background(Color.LightGray),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = user.imagePath.toString(), fontSize = 48.sp)
+            val imageBitmap: ImageBitmap? = remember(user.image) {
+                user.image?.let { base64String ->
+                    try {
+                        val pureBase64 = base64String.substringAfter(",")
+                        val bytes = android.util.Base64.decode(pureBase64, android.util.Base64.DEFAULT)
+                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+            }
+
+            if (imageBitmap != null) {
+                Image(
+                    painter = BitmapPainter(imageBitmap),
+                    contentDescription = "Profile image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text("?", fontSize = 48.sp)
+            }
         }
 
         Spacer(Modifier.height(Dimens.PaddingLarge))
@@ -196,7 +222,6 @@ private fun ProfileContent(
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
-        // Info cards
         ProfileInfoCard(user.email)
         Spacer(Modifier.height(Dimens.PaddingMedium))
         ProfileInfoCard(ProfileStrings.FacultyName)
@@ -207,19 +232,13 @@ private fun ProfileContent(
 
         Spacer(Modifier.height(Dimens.PaddingMedium))
 
-        // CV Upload
         UploadCvCard(selectedPdfName, onUploadClick)
 
         Spacer(Modifier.height(Dimens.PaddingMedium))
 
-        // Upload button
         if (selectedPdfName.isNotEmpty()) {
             Button(
-                onClick = {
-                    scope.launch {
-                        onMessageChange(ProfileStrings.UploadSuccess)
-                    }
-                },
+                onClick = onUploadToServer,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.PaddingLarge),
@@ -240,7 +259,6 @@ private fun ProfileContent(
             Spacer(Modifier.height(Dimens.PaddingSmall))
         }
 
-        // Poruka ispod forme
         if (messageText.isNotEmpty()) {
             Text(
                 text = messageText,
@@ -297,9 +315,6 @@ private fun ProfileInfoCard(text: String) {
     }
 }
 
-// ----------------------------
-//  HELPERS
-// ----------------------------
 private fun Uri.getDisplayName(context: Context): String? {
     return try {
         context.contentResolver.query(this, null, null, null, null)?.use { cursor ->
@@ -310,10 +325,6 @@ private fun Uri.getDisplayName(context: Context): String? {
         null
     }
 }
-
-
-// Privatni objekti za konstante, da se izbjegnu "magic numbers" i hardkodirani stringovi
-// ovo se moe staviti i u color.kt, theme.kt, type.kt
 
 public object ProfileColors {
     val LogoTeal = Color(0xFF006B5C)
@@ -335,10 +346,8 @@ public object Dimens {
 public object ProfileStrings {
     const val AppNameOtp = "OTP"
     const val AppNameStudent = "Student"
-    const val Back = "Natrag"
     const val Edit = "Uredi"
     const val ErrorPrefix = "Greška: "
-    const val DefaultPdfName = "odabrano_file.pdf"
     const val FileNotSelected = "Nije odabrana nijedna datoteka"
     const val UploadCv = "Upload CV"
     const val SelectCv = "Odaberi CV"
@@ -346,9 +355,5 @@ public object ProfileStrings {
     const val FacultyName = "Fakultet organizacije i informatike"
     const val YearNotSet = "Godina nije upisana"
     const val AreaNotSet = ""
-    const val EmulatorPickerMessage =
-        "Picker nije dostupan na emulatoru. Odabrana dummy datoteka."
-    const val EmulatorDummyFile = "dummy.pdf"
-
     fun yearOfStudyFormatted(year: Int) = "$year. godina"
 }
