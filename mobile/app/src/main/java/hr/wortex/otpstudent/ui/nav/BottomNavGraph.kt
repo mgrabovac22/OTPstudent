@@ -15,6 +15,7 @@ import hr.wortex.otpstudent.ui.profil.ProfileScreen
 import hr.wortex.otpstudent.ui.profil.EditProfileScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
+import hr.wortex.otpstudent.ui.registration.RegistrationScreen
 import hr.wortex.otpstudent.ui.unlock.UnlockScreen
 
 @Composable
@@ -52,6 +53,13 @@ fun MainNavGraph(navController: NavHostController) {
                     LoginScreen(paddingValues = innerPadding, navController = navController)
                 }
             }
+
+            composable("registration_screen") {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    RegistrationScreen(paddingValues = innerPadding, navController = navController)
+                }
+            }
+
             composable("edit_profile_screen") {
                 EditProfileScreen()
             }
