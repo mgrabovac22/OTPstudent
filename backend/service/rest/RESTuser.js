@@ -30,8 +30,6 @@ class RESTuser {
       !email ||
       !yearOfStudy ||
       !areaOfStudy ||
-      !imagePath ||
-      !cvPath ||
       !dateOfBirth
     ) {
       return res.status(400).json({ error: "Required data missing!" });
