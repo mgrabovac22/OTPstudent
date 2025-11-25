@@ -10,6 +10,7 @@ const cors = require("cors");
 const logger = require("../log/logger.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("./modules/jwtModul.js");
 const RESTuser = require("./rest/RESTuser.js");
+const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -43,6 +44,7 @@ server.use(session({
     cookie: { secure: true, sameSite: "Strict", maxAge: 3600000 }
 }));
 
+const restInformationalContent = new RESTinformationalContent();
 const restUser = new RESTuser();
 
 server.post("/api/login", restUser.login.bind(restUser));
@@ -127,10 +129,12 @@ server.all(/(.*)/, (req, res, next) => {
     }
 });
 
-
 server.get("/api/current-user", restUser.getCurrentUser.bind(restUser));
 server.put("/api/update-user", restUser.updateUser.bind(restUser));
 server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
+
+server.post("/api/post-info-content", restInformationalContent.post.bind(restInformationalContent));
+server.get("/api/info-content", restInformationalContent.get.bind(restInformationalContent));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`
