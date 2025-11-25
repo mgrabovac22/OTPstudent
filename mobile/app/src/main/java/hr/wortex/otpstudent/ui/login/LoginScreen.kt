@@ -203,7 +203,9 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                 Text(
                     "Registriraj se!",
                     color = Color.White,
-                    modifier = Modifier.clickable { /* TODO: handle registration */ }
+                    modifier = Modifier.clickable {
+                        navController.navigate("registration_screen")
+                    }
                 )
             }
         }
