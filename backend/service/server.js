@@ -11,6 +11,7 @@ const logger = require("../log/logger.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("./modules/jwtModul.js");
 const RESTuser = require("./rest/RESTuser.js");
 const {uploadCV, uploadImage} = require("./rest/RESTupload.js");
+const RESTInstitution = require("./rest/RESTInstitution.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -45,6 +46,7 @@ server.use(session({
 }));
 
 const restUser = new RESTuser();
+const restInstitution = new RESTInstitution();
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
@@ -134,6 +136,8 @@ server.put("/api/update-user", restUser.updateUser.bind(restUser));
 server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
 server.post("/api/upload-cv", uploadCV.single("cv"), restUser.uploadCV.bind(restUser));
 server.post("/api/upload-image", uploadImage.single("image"), restUser.uploadImage.bind(restUser));
+
+server.get("/api/institutions", restInstitution.getAllInstitutions.bind(restInstitution));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`
