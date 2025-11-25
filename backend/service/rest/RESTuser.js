@@ -22,7 +22,8 @@ class RESTuser {
       areaOfStudy,
       imagePath,
       cvPath,
-      dateOfBirth
+      dateOfBirth,
+      Higher_Education_Body_id
     } = req.body;
 
     if (
@@ -32,7 +33,8 @@ class RESTuser {
       !email ||
       !yearOfStudy ||
       !areaOfStudy ||
-      !dateOfBirth
+      !dateOfBirth ||
+      !Higher_Education_Body_id
     ) {
       return res.status(400).json({ error: "Required data missing!" });
     }
@@ -50,7 +52,8 @@ class RESTuser {
         password: hashedPassword,
         imagePath,
         cvPath,
-        dateOfBirth
+        dateOfBirth,
+        Higher_Education_Body_id
       };
 
       const response = await this.userDAO.add(user);
