@@ -1,42 +1,16 @@
 package hr.wortex.otpstudent.ui.registration
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.Create
-import androidx.compose.material.icons.rounded.DateRange
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,7 +29,8 @@ import hr.wortex.otpstudent.R
 import java.util.Calendar
 
 @Composable
-fun RegistrationScreen(paddingValues: PaddingValues, navController: NavController){
+fun RegistrationScreen(paddingValues: PaddingValues, navController: NavController) {
+
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -77,14 +52,12 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
     var dateOfBirthError by remember { mutableStateOf<String?>(null) }
     var higherEducationBodyError by remember { mutableStateOf<String?>(null) }
 
-    // TODO: Replace with API call 
-    var higherEducationBodyOptions = mapOf<Int, String>(
+    // TODO: Replace with API call
+    val higherEducationBodyOptions = mapOf(
         1 to "Fakultet organizacije i informatike",
         2 to "Fakultet elektrotehnike i računarstva",
         3 to "Sveučilište u Zagrebu"
     )
-
-    var isPopupVisible by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -222,8 +195,8 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
             //Date of birth
             CreateDatePickerInput(
                 dateOfBirth = dateOfBirth,
-                onDateSelected = { selectedDate ->
-                    dateOfBirth = selectedDate
+                onDateSelected = { selected ->
+                    dateOfBirth = selected
                     dateOfBirthError = null
                 },
                 error = dateOfBirthError
@@ -241,8 +214,7 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
                     higherEducationBody = selectedValue
                     higherEducationBodyID = selectedKey
                 },
-                error = higherEducationBodyError,
-                leadingIcon = { Icon(Icons.Rounded.Home, contentDescription = null) }
+                error = higherEducationBodyError
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -275,19 +247,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
         }
-
-        if(isPopupVisible){
-
-        }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun RegistrationScreenPreview(){
-    val navController = rememberNavController()
-    Scaffold { padding ->
-        RegistrationScreen(paddingValues = padding, navController = navController)
     }
 }
 
@@ -329,53 +288,78 @@ fun CreateTextInput(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // TODO: fix
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateDatePickerInput(
     dateOfBirth: String,
     onDateSelected: (String) -> Unit,
     error: String? = null
 ) {
-    var showDatePickerDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    if (showDatePickerDialog) {
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val openDatePicker = remember {
+        {
+            val cal = Calendar.getInstance()
+            val year = cal.get(Calendar.YEAR)
+            val month = cal.get(Calendar.MONTH)
+            val day = cal.get(Calendar.DAY_OF_MONTH)
 
-        android.app.DatePickerDialog(
-            LocalContext.current,
-            { _, selectedYear, selectedMonth, selectedDay ->
-                val formattedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                onDateSelected(formattedDate)
-            },
-            year,
-            month,
-            day
-        ).show()
+            DatePickerDialog(
+                context,
+                { _, y, m, d ->
+                    onDateSelected("$d/${m + 1}/$y")
+                },
+                year,
+                month,
+                day
+            ).show()
+        }
     }
 
-    TextField(
-        value = dateOfBirth,
-        onValueChange = {},
-        label = { Text(error ?: "Datum rođenja", color = if (error != null) Color.Red else Color.Unspecified) },
-        readOnly = true,
-        leadingIcon = { Icon(Icons.Rounded.DateRange, contentDescription = null) },
-        isError = error != null,
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedIndicatorColor = Color.White
-        )
-    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .clickable { openDatePicker() },
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            tonalElevation = 1.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.DateRange,
+                    contentDescription = null,
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Datum rođenja",
+                        fontSize = 12.sp,
+                        color = if (error != null) Color.Red else Color.Unspecified
+                    )
+
+                    Text(
+                        text = dateOfBirth.ifBlank { "Unesite datum rođenja" },
+                        fontSize = 16.sp,
+                        color = if (dateOfBirth.isBlank()) Color.DarkGray else Color.Black,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+        }
+    }
 
     if (error != null) {
         Text(
-            text = error ?: "",
+            text = error,
             color = Color.Red,
             fontSize = 14.sp,
             modifier = Modifier
@@ -385,6 +369,7 @@ fun CreateDatePickerInput(
     }
 }
 
+
 @Composable
 fun CreateDropdownMenu(
     value: String,
@@ -393,29 +378,103 @@ fun CreateDropdownMenu(
     options: Map<Int,String>,
     onValueChange: (Int,String) -> Unit,
     error: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null
 ){
-    var selectedKey by remember { mutableIntStateOf(ID) }
-    var selectedValue by remember { mutableStateOf(value) }
+    var showDialog by remember { mutableStateOf(false) }
 
-    TextField(
-        value = selectedValue,
-        onValueChange = {
-            onValueChange(selectedKey, it)
-        },
-        label = { Text(error ?: label, color = if (error != null) Color.Red else Color.Unspecified) },
-        readOnly = true,
-        leadingIcon = leadingIcon,
-        isError = error != null,
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedIndicatorColor = Color.White
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .clickable { showDialog = true },
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            tonalElevation = 1.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Home,
+                    contentDescription = null,
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = label,
+                        fontSize = 12.sp,
+                        color = if (error != null) Color.Red else Color.Unspecified
+                    )
+
+                    Text(
+                        text = value.ifBlank { "Odaberite obrazovno tijelo" },
+                        fontSize = 16.sp,
+                        color = if (value.isBlank()) Color.DarkGray else Color.Black,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+        }
+
+        if (error != null) {
+            Text(
+                text = error ?: "",
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            )
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {},
+            text = {
+                Column {
+                    Text("Odaberite obrazovno tijelo", fontSize = 18.sp)
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    options.forEach { (id, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onValueChange(id, label)
+                                    showDialog = false
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (id == ID),
+                                onClick = {
+                                    onValueChange(id, label)
+                                    showDialog = false
+                                }
+                            )
+                            Text(text = label, fontSize = 16.sp)
+                        }
+                    }
+                }
+            }
         )
-    )
+    }
+}
 
-    // TODO: create dropdown or popup to show possible values from options
+@Preview(showSystemUi = true)
+@Composable
+fun RegistrationScreenPreview(){
+    val navController = rememberNavController()
+    Scaffold { padding ->
+        RegistrationScreen(paddingValues = padding, navController = navController)
+    }
 }
