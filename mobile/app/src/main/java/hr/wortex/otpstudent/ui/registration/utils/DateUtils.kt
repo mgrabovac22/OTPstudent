@@ -45,4 +45,10 @@ object DateUtils {
             false
         }
     }
+
+    fun latestAllowedBirthDateMillis(): Long {
+        val cal = Calendar.getInstance()
+        cal.add(Calendar.YEAR, -18)
+        return cal.timeInMillis
+    }
 }

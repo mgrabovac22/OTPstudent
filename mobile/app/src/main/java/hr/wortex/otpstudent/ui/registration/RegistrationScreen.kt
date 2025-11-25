@@ -326,7 +326,7 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
                 if (uiState.value == RegisterUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                 } else {
-                    Text(text = "Prijava")
+                    Text(text = "Registracija")
                 }
             }
 
@@ -404,13 +404,15 @@ fun CreateDatePickerInput(
     error: String? = null
 ) {
     val context = LocalContext.current
+    val latestAllowed = remember { DateUtils.latestAllowedBirthDateMillis() }
 
-    val openDatePicker = remember {
+    val openDatePicker = remember (dateOfBirth, latestAllowed) {
         {
-            val cal = Calendar.getInstance()
-            val year = cal.get(Calendar.YEAR)
-            val month = cal.get(Calendar.MONTH)
-            val day = cal.get(Calendar.DAY_OF_MONTH)
+            val initialMillis = hr.wortex.otpstudent.ui.profil.edit.DateUtils.displayToMillis(dateOfBirth)?.let {
+                if (it <= latestAllowed) it else latestAllowed
+            } ?: latestAllowed
+
+            val cal = Calendar.getInstance().apply { timeInMillis = initialMillis }
 
             DatePickerDialog(
                 context,
@@ -419,10 +421,13 @@ fun CreateDatePickerInput(
                     val month = (m + 1).toString().padStart(2, '0')
                     onDateSelected("$day.$month.$y.")
                 },
-                year,
-                month,
-                day
-            ).show()
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+            ).apply {
+                datePicker.maxDate = latestAllowed
+                datePicker.minDate = Calendar.getInstance().apply { set(1900, Calendar.JANUARY, 1) }.timeInMillis
+            }.show()
         }
     }
 

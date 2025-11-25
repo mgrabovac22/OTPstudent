@@ -399,7 +399,8 @@ ENGINE = InnoDB;
 INSERT INTO `Higher_Education_Body` (`id`, `name`) VALUES
 (1, 'Sveučilište u Zagrebu, FER'),
 (2, 'Veleučilište u Rijeci'),
-(3, 'Ekonomski Fakultet Split');
+(3, 'Ekonomski Fakultet Split'),
+(4, 'Fakultet organizacije i informatike Varaždin');
 
 -- Student_Internship_Job (Tipovi poslova/praksi koje student očekuje)
 INSERT INTO `Student_Internship_Job` (`id`, `name`) VALUES
