@@ -10,6 +10,7 @@ const cors = require("cors");
 const logger = require("../log/logger.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("./modules/jwtModul.js");
 const RESTuser = require("./rest/RESTuser.js");
+const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -43,10 +44,18 @@ server.use(session({
     cookie: { secure: true, sameSite: "Strict", maxAge: 3600000 }
 }));
 
+const restInformationalContent = new RESTinformationalContent();
 const restUser = new RESTuser();
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
+
+server.post("/api/postInformationalContent",
+    restInformationalContent.postInformationalContent.bind(restInformationalContent)
+);
+server.get("/api/getInformationalContent",
+    restInformationalContent.getInformationalContent.bind(restInformationalContent)
+);
 
 //For web applications
 server.get("/api/getJWT", (req, res) => {    
