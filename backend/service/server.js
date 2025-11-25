@@ -50,13 +50,6 @@ const restUser = new RESTuser();
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
 
-server.post("/api/postInformationalContent",
-    restInformationalContent.postInformationalContent.bind(restInformationalContent)
-);
-server.get("/api/getInformationalContent",
-    restInformationalContent.getInformationalContent.bind(restInformationalContent)
-);
-
 //For web applications
 server.get("/api/getJWT", (req, res) => {    
     if (req.session.user) {
@@ -136,10 +129,12 @@ server.all(/(.*)/, (req, res, next) => {
     }
 });
 
-
 server.get("/api/current-user", restUser.getCurrentUser.bind(restUser));
 server.put("/api/update-user", restUser.updateUser.bind(restUser));
 server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
+
+server.post("/api/post-info-content", restInformationalContent.post.bind(restInformationalContent));
+server.get("/api/info-content", restInformationalContent.get.bind(restInformationalContent));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`
