@@ -1,8 +1,11 @@
 package hr.wortex.otpstudent.data.remote.api
 
+import hr.wortex.otpstudent.data.remote.dto.InstitutionDto
 import hr.wortex.otpstudent.data.remote.dto.LoginDto
 import hr.wortex.otpstudent.data.remote.dto.LoginResponseDto
 import hr.wortex.otpstudent.data.remote.dto.RefreshDto
+import hr.wortex.otpstudent.data.remote.dto.RegisterDto
+import hr.wortex.otpstudent.data.remote.dto.RegisterResponseDto
 import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.data.remote.dto.UserDto
 import okhttp3.MultipartBody
@@ -26,6 +29,12 @@ interface IOtpApiService {
         @Body req: LoginDto
     ): LoginResponseDto
 
+    @POST("api/register")
+    suspend fun register(
+        @Header("x-mobile") isMobile: String = "true",
+        @Body req: RegisterDto
+    ): RegisterResponseDto
+
     @POST("api/refresh")
     suspend fun refresh(@Body body: Map<String, String>): RefreshDto
 
@@ -45,4 +54,8 @@ interface IOtpApiService {
     suspend fun uploadImage(
         @Part image: MultipartBody.Part
     ): Map<String, String>
+
+    @GET("api/institutions")
+    suspend fun getInstitutions(
+    ): List<InstitutionDto>
 }

@@ -101,7 +101,7 @@ server.get("/api/logout", (req, res) => {
 });
 
 server.all(/(.*)/, (req, res, next) => {
-    if (req.path === "/login" || req.path === "/register" || req.path === "/getJWT") {
+    if (req.path === "/login" || req.path === "/register" || req.path === "/getJWT" || req.path === "/api/institutions") {
         return next();
     }
     

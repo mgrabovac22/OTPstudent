@@ -23,7 +23,7 @@ fun MainNavGraph(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBottomBar = currentRoute != "login_screen" && currentRoute != "unlock_screen"
+    val showBottomBar = currentRoute != "login_screen" && currentRoute != "unlock_screen" && currentRoute != "registration_screen"
 
     Scaffold(
         bottomBar = {
@@ -55,9 +55,7 @@ fun MainNavGraph(navController: NavHostController) {
             }
 
             composable("registration_screen") {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     RegistrationScreen(paddingValues = innerPadding, navController = navController)
-                }
             }
 
             composable("edit_profile_screen") {
