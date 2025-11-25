@@ -56,7 +56,16 @@ class RESTuser {
       const response = await this.userDAO.add(user);
 
       if (response) {
-        res.status(201).json({ success: "User registered successfully!" });
+        const tokenData = { email: user.email };
+        const accessToken = createAccessToken(tokenData);
+        const refreshToken = createRefreshToken(tokenData);
+
+        res.status(201).json(
+          {
+            success: "User registered successfully!",
+            accessToken: accessToken,
+            refreshToken: refreshToken
+          });
       } else {
         res.status(400).json({ error: "User registration failed!" });
       }

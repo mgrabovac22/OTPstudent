@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,13 +24,21 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import hr.wortex.otpstudent.R
+import hr.wortex.otpstudent.di.DependencyProvider
+import hr.wortex.otpstudent.ui.registration.utils.DateUtils
+import hr.wortex.otpstudent.ui.registration.utils.ValidationUtils
 import java.util.Calendar
 
 @Composable
 fun RegistrationScreen(paddingValues: PaddingValues, navController: NavController) {
+
+    val viewModel: RegistrationScreenViewModel = viewModel(factory = RegistrationViewModelFactory(
+        DependencyProvider.register, DependencyProvider.getAllInstitutions))
+    val uiState = viewModel.uiState.collectAsState()
 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -51,13 +60,25 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
     var areaOfStudyError by remember { mutableStateOf<String?>(null) }
     var dateOfBirthError by remember { mutableStateOf<String?>(null) }
     var higherEducationBodyError by remember { mutableStateOf<String?>(null) }
+    var generalError by remember { mutableStateOf<String?>(null) }
 
-    // TODO: Replace with API call
-    val higherEducationBodyOptions = mapOf(
-        1 to "Fakultet organizacije i informatike",
-        2 to "Fakultet elektrotehnike i računarstva",
-        3 to "Sveučilište u Zagrebu"
-    )
+    val higherEducationBodyOptions by viewModel.institutions.collectAsState()
+
+    LaunchedEffect(uiState.value) {
+        when (val state = uiState.value) {
+            is RegisterUiState.Success -> {
+                navController.navigate("home_screen") {
+                    popUpTo("registration_screen") { inclusive = true }
+                }
+            }
+            is RegisterUiState.Error -> {
+                generalError = (uiState.value as RegisterUiState.Error).message
+            }
+            else -> {
+                generalError = null
+            }
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -66,8 +87,8 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -213,6 +234,7 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
                 onValueChange = { selectedKey, selectedValue ->
                     higherEducationBody = selectedValue
                     higherEducationBodyID = selectedKey
+                    higherEducationBodyError = null
                 },
                 error = higherEducationBodyError
             )
@@ -221,15 +243,101 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Button(
                 onClick = {
-                    // TODO: Validate registration
+                    var isValid = true
+
+                    if (!ValidationUtils.isLongerThanOneCharacter(firstName)) {
+                        firstNameError = "Ime mora imati više od jednog znaka"
+                        isValid = false
+                    }
+
+                    if (!ValidationUtils.isLongerThanOneCharacter(lastName)) {
+                        lastNameError = "Prezime mora imati više od jednog znaka"
+                        isValid = false
+                    }
+
+                    if (!ValidationUtils.isEmailValid(email)) {
+                        emailError = "Email mora završavati s @student.foi.hr"
+                        isValid = false
+                    }
+
+                    if (!ValidationUtils.isPasswordValid(password)) {
+                        passwordError = "Lozinka mora biti između 8 i 64 znaka"
+                        isValid = false
+                    }
+
+                    if (!ValidationUtils.doPasswordsMatch(password,confirmPassword)) {
+                        confirmPasswordError = "Lozinke se ne podudaraju"
+                        isValid = false
+                    }
+
+                    if (ValidationUtils.isEmpty(areaOfStudy)) {
+                        areaOfStudyError = "Smjer ne može biti prazan"
+                        isValid = false
+                    }
+
+                    val year = yearOfStudy.toIntOrNull()
+                    if (year == null || year !in 1..5) {
+                        yearOfStudyError = "Godina studija mora biti između 1 i 5"
+                        isValid = false
+                    }
+
+                    var formattedDate = ""
+
+                    if (dateOfBirth.isBlank()) {
+                        dateOfBirthError = "Unesite datum rođenja"
+                        isValid = false
+                    } else {
+                        if (!DateUtils.isNotInFuture(dateOfBirth)) {
+                            dateOfBirthError = "Datum ne smije biti u budućnosti"
+                            isValid = false
+                        } else if (!DateUtils.isAtLeast18(dateOfBirth)) {
+                            dateOfBirthError = "Morate imati više od 18 godina"
+                            isValid = false
+                        } else {
+                            formattedDate = DateUtils.formatForApi(dateOfBirth)
+                        }
+                    }
+
+                    if (higherEducationBodyID == 0) {
+                        higherEducationBodyError = "Odaberite obrazovno tijelo"
+                        isValid = false
+                    }
+
+                    if (isValid) {
+                        viewModel.registerUser(
+                            firstName = firstName,
+                            lastName = lastName,
+                            email = email,
+                            hashPassword = password,
+                            yearOfStudy = yearOfStudy.toIntOrNull()!!,
+                            areaOfStudy = areaOfStudy,
+                            dateOfStudy = formattedDate,
+                            higherEducationBodyID = higherEducationBodyID
+                        )
+
+
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 90.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
             ) {
-                // TODO: Implement uiState
-                Text(text = "Registracija")
+                if (uiState.value == RegisterUiState.Loading) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                } else {
+                    Text(text = "Prijava")
+                }
+            }
+
+            if (generalError != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = generalError ?: "",
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -262,7 +370,7 @@ fun CreateTextInput(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(error ?: label, color = if (error != null) Color.Red else Color.Unspecified) },
+        label = { Text(label, color = Color.Unspecified) },
         leadingIcon = leadingIcon,
         isError = error != null,
         shape = RoundedCornerShape(8.dp),
@@ -307,7 +415,9 @@ fun CreateDatePickerInput(
             DatePickerDialog(
                 context,
                 { _, y, m, d ->
-                    onDateSelected("$d/${m + 1}/$y")
+                    val day = d.toString().padStart(2, '0')
+                    val month = (m + 1).toString().padStart(2, '0')
+                    onDateSelected("$day.$month.$y.")
                 },
                 year,
                 month,
@@ -343,7 +453,7 @@ fun CreateDatePickerInput(
                     Text(
                         text = "Datum rođenja",
                         fontSize = 12.sp,
-                        color = if (error != null) Color.Red else Color.Unspecified
+                        color = Color.Unspecified
                     )
 
                     Text(
