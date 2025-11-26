@@ -16,6 +16,7 @@ import hr.wortex.otpstudent.ui.unlock.UnlockViewModelFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import hr.wortex.otpstudent.domain.usecase.GetInfoContentDetail
 
 object DependencyProvider {
 
@@ -58,4 +59,6 @@ object DependencyProvider {
     val infoContentRepository by lazy { InfoContentRepository(InfoContentRemoteDataSource(apiServiceWithInterceptor)) }
 
     val unlockViewModelFactory by lazy { UnlockViewModelFactory(userRepository) }
+
+    val getInfoContentDetailUseCase by lazy { GetInfoContentDetail(infoContentRepository) }
 }

@@ -10,4 +10,8 @@ class InfoContentRemoteDataSource (
     override suspend fun getInfoContent(): List<InfoDTO> {
         return api.getInfoContent()
     }
+
+    override suspend fun getInfoContentById(id: Int): InfoDTO {
+        return api.getInfoContentById(id)
+    }
 }

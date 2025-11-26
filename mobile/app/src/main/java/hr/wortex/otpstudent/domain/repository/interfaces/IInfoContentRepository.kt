@@ -4,4 +4,5 @@ import hr.wortex.otpstudent.domain.model.InfoContent
 
 interface IInfoContentRepository {
     suspend fun getInfoContent(): List<InfoContent>
+    suspend fun getInfoContentById(id: Int): InfoContent
 }

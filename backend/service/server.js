@@ -135,6 +135,7 @@ server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
 
 server.post("/api/post-info-content", restInformationalContent.post.bind(restInformationalContent));
 server.get("/api/info-content", restInformationalContent.get.bind(restInformationalContent));
+server.get("/api/info-content/:id", restInformationalContent.getById.bind(restInformationalContent));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`

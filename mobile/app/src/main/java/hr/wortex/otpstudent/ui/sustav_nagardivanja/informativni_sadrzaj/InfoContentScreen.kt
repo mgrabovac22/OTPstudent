@@ -43,7 +43,6 @@ import hr.wortex.otpstudent.domain.model.InfoContent
 import hr.wortex.otpstudent.domain.usecase.GetInfoContent
 import androidx.compose.foundation.lazy.items
 
-
 @Composable
 fun InfoContentScreen(paddingValues: PaddingValues, navController: NavController) {
     val getInfoContentUseCase = remember { GetInfoContent(DependencyProvider.infoContentRepository) }
@@ -69,7 +68,12 @@ fun InfoContentScreen(paddingValues: PaddingValues, navController: NavController
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
                 items(state.infoContents) { item ->
-                    InfoContentCard(item = item)
+                    InfoContentCard(
+                        item = item,
+                        onReadMoreClick = { clickedId ->
+                            navController.navigate("info_detail_screen/$clickedId")
+                        }
+                    )
                 }
             }
         }
@@ -103,7 +107,7 @@ fun RoundedBoxCard(
 }
 
 @Composable
-fun InfoContentCard(item: InfoContent) {
+fun InfoContentCard(item: InfoContent, onReadMoreClick: (Int) -> Unit) {
     RoundedBoxCard(
         modifier = Modifier
             .fillMaxWidth(0.9f)
@@ -141,7 +145,7 @@ fun InfoContentCard(item: InfoContent) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { /* Navigacija na detalje, npr. navController.navigate("details/${item.id}") */ },
+                    onClick = { onReadMoreClick(item.id) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
                 ) {

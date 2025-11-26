@@ -15,7 +15,10 @@ import hr.wortex.otpstudent.ui.profil.ProfileScreen
 import hr.wortex.otpstudent.ui.profil.EditProfileScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoContentScreen
+import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoDetailScreen
 import hr.wortex.otpstudent.ui.unlock.UnlockScreen
 
 @Composable
@@ -62,6 +65,15 @@ fun MainNavGraph(navController: NavHostController) {
 
             composable("reward_screen") {
                 InfoContentScreen(paddingValues = innerPadding, navController = navController)
+            }
+
+            composable(
+                route = "info_detail_screen/{contentId}",
+                arguments = listOf(navArgument("contentId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val contentId = backStackEntry.arguments?.getInt("contentId") ?: 0
+
+                InfoDetailScreen(contentId = contentId, navController = navController)
             }
         }
     }

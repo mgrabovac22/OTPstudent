@@ -9,6 +9,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface IOtpApiService {
 
@@ -28,4 +29,7 @@ interface IOtpApiService {
     @GET("api/info-content")
     suspend fun getInfoContent(
     ): List<InfoDTO>
+
+    @GET("api/info-content/{id}")
+    suspend fun getInfoContentById(@Path("id") id: Int): InfoDTO
 }

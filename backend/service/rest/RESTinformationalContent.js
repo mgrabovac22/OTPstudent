@@ -67,7 +67,7 @@ class RESTinformationalContent {
         res.type("application/json");
 
         try {
-            const id = req.informationalContent.id;
+            const id = req.params.id;
 
             const informationalContent = await this.InformationalContentDAO.getContentById(id);
 
