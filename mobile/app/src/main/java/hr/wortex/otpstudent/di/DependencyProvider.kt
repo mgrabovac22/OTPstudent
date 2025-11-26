@@ -5,8 +5,10 @@ import hr.wortex.otpstudent.data.local.TokenStorage
 import hr.wortex.otpstudent.data.remote.AuthInterceptor
 import hr.wortex.otpstudent.data.remote.api.IOtpApiService
 import hr.wortex.otpstudent.data.remote.datasource.AuthRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.InfoContentRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
 import hr.wortex.otpstudent.domain.repository.AuthRepository
+import hr.wortex.otpstudent.domain.repository.InfoContentRepository
 import hr.wortex.otpstudent.domain.repository.TokenRepository
 import hr.wortex.otpstudent.domain.repository.UserRepository
 import hr.wortex.otpstudent.domain.usecase.Login
@@ -52,6 +54,8 @@ object DependencyProvider {
     val authRepository by lazy { AuthRepository(AuthRemoteDataSource(apiServiceWithInterceptor), storage) }
     val userRepository by lazy { UserRepository(UsersRemoteDataSource(apiServiceWithInterceptor)) }
     val login by lazy { Login(authRepository) }
+
+    val infoContentRepository by lazy { InfoContentRepository(InfoContentRemoteDataSource(apiServiceWithInterceptor)) }
 
     val unlockViewModelFactory by lazy { UnlockViewModelFactory(userRepository) }
 }

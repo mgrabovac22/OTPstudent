@@ -1,0 +1,7 @@
+package hr.wortex.otpstudent.domain.repository.interfaces
+
+import hr.wortex.otpstudent.domain.model.InfoContent
+
+interface IInfoContentRepository {
+    suspend fun getInfoContent(): List<InfoContent>
+}
