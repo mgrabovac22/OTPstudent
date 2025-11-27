@@ -17,7 +17,7 @@ import hr.wortex.otpstudent.domain.repository.InternshipRepository
 import hr.wortex.otpstudent.domain.repository.interfaces.IInternshipRepository
 import hr.wortex.otpstudent.domain.usecase.ApplyToInternship
 import hr.wortex.otpstudent.domain.usecase.GetJobs
-import hr.wortex.otpstudent.ui.poslovi.BusinessViewModelFactory
+import hr.wortex.otpstudent.ui.internship.InternshipApplicationViewModelFactory
 import hr.wortex.otpstudent.ui.unlock.UnlockViewModelFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -65,12 +65,13 @@ object DependencyProvider {
     val institutionRepository by lazy { InstitutionRepository(InstitutionRemoteDataSource(apiServiceWithInterceptor)) }
     val getAllInstitutions by lazy { GetInstitutions(institutionRepository) }
 
-    // Internship DI
     private val internshipRemoteDataSource: IInternshipRemoteDataSource by lazy { InternshipRemoteDataSource(apiServiceWithInterceptor) }
     val internshipRepository: IInternshipRepository by lazy { InternshipRepository(internshipRemoteDataSource) }
     val getJobs by lazy { GetJobs(internshipRepository) }
     val applyToInternship by lazy { ApplyToInternship(internshipRepository) }
 
     val unlockViewModelFactory by lazy { UnlockViewModelFactory(userRepository) }
-    val businessViewModelFactory by lazy { BusinessViewModelFactory(applyToInternship) }
+    val internshipApplicationViewModelFactory by lazy {
+        InternshipApplicationViewModelFactory(userRepository, internshipRepository, applyToInternship)
+    }
 }
