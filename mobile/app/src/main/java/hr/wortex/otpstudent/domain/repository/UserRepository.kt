@@ -9,6 +9,7 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
     override suspend fun getCurrentUser(): User {
         val dto = remoteDataSource.getCurrentUser()
         return User(
+            id = dto.id,
             email = dto.email,
             firstName = dto.firstName,
             lastName = dto.lastName,

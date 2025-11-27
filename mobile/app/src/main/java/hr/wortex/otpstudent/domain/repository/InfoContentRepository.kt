@@ -29,4 +29,8 @@ class InfoContentRepository(private val remoteDataSource: InfoContentRemoteDataS
             experiencePoints = dto.experiencePoints
         )
     }
+
+    override suspend fun markContentAsRead(userId: Int, contentId: Int) {
+        remoteDataSource.markContentAsRead(userId, contentId)
+    }
 }

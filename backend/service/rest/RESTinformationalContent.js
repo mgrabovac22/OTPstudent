@@ -1,5 +1,4 @@
 const InformationalContentDAO = require("../dao/informationalContentDAO.js");
-const { createAccessToken, checkToken, createRefreshToken } = require("../modules/jwtModul.js");
 
 class RESTinformationalContent {
     constructor() {

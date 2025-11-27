@@ -29,8 +29,13 @@ fun InfoDetailScreen(
     contentId: Int,
     navController: NavController
 ) {
-    val getInfoDetailUseCase = remember { DependencyProvider.getInfoContentDetailUseCase }
-    val viewModel = remember { InfoDetailViewModel(getInfoDetailUseCase) }
+    val getDetailUseCase = remember { DependencyProvider.getInfoContentDetailUseCase }
+    val markReadUseCase = remember { DependencyProvider.markInfoContentReadUseCase }
+    val getUserUseCase = remember { DependencyProvider.getUserUseCase }
+
+    val viewModel = remember {
+        InfoDetailViewModel(getDetailUseCase, markReadUseCase, getUserUseCase)
+    }
 
     LaunchedEffect(contentId) {
         viewModel.fetchInfoDetail(contentId)
@@ -99,7 +104,9 @@ fun InfoDetailScreen(
 
                         Button(
                             onClick = {
-                                navController.popBackStack()
+                                viewModel.onFinishClick(contentId) {
+                                    navController.popBackStack()
+                                }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
