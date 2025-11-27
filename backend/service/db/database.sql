@@ -403,10 +403,13 @@ INSERT INTO `Higher_Education_Body` (`id`, `name`) VALUES
 
 -- Student_Internship_Job (Tipovi poslova/praksi koje student očekuje)
 INSERT INTO `Student_Internship_Job` (`id`, `name`) VALUES
-(1, 'Razvoj web aplikacija (Frontend)'),
-(2, 'Analiza podataka (Data Analyst)'),
+(1, 'Razvoj web aplikacija'),
+(2, 'Analiza podataka'),
 (3, 'Digitalni marketing'),
-(4, 'Programiranje mobilnih aplikacija');
+(4, 'Razvoj mobilnih aplikacija'),
+(5, 'Financije i računovodstvo'),
+(6, 'Projektni menadžment'),
+(7, 'Korisnička podrška');
 
 -- Location (Lokacije poslova)
 INSERT INTO `Location` (`id`, `address`) VALUES
