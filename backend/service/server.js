@@ -11,6 +11,7 @@ const logger = require("../log/logger.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("./modules/jwtModul.js");
 const RESTuser = require("./rest/RESTuser.js");
 const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
+const RestUserRead = require("./rest/RESTuserRead.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -46,6 +47,7 @@ server.use(session({
 
 const restInformationalContent = new RESTinformationalContent();
 const restUser = new RESTuser();
+const restUserRead = new RestUserRead();
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
@@ -136,6 +138,8 @@ server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
 server.post("/api/post-info-content", restInformationalContent.post.bind(restInformationalContent));
 server.get("/api/info-content", restInformationalContent.get.bind(restInformationalContent));
 server.get("/api/info-content/:id", restInformationalContent.getById.bind(restInformationalContent));
+
+server.post("/api/info-content/read", restUserRead.markContentRead.bind(restUserRead));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`

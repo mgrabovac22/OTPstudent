@@ -9,8 +9,18 @@ class InformationalContentDAO {
         return await this.db.executeQuery("SELECT * FROM Informational_Content WHERE id = ?", [id]);
     }
 
-    async getInformationalContent() {
-        return await this.db.executeQuery("SELECT * FROM Informational_Content");
+    async getInformationalContent(userId) {
+        const sql = `
+            SELECT ic.* 
+            FROM Informational_Content ic
+            WHERE ic.id NOT IN (
+                SELECT ur.Informational_Content_id 
+                FROM User_Has_Read_Info ur 
+                WHERE ur.User_id = ?
+            )
+        `;
+
+        return await this.db.executeQuery(sql, [userId]);
     }
 
     async add(content) {

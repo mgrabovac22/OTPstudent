@@ -5,6 +5,7 @@ import hr.wortex.otpstudent.data.remote.dto.LoginResponseDto
 import hr.wortex.otpstudent.data.remote.dto.RefreshDto
 import hr.wortex.otpstudent.data.remote.dto.UserDto
 import hr.wortex.otpstudent.data.remote.dto.InfoDTO
+import hr.wortex.otpstudent.data.remote.dto.MarkReadDTO
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -32,4 +33,7 @@ interface IOtpApiService {
 
     @GET("api/info-content/{id}")
     suspend fun getInfoContentById(@Path("id") id: Int): InfoDTO
+
+    @POST("api/info-content/read")
+    suspend fun markContentAsRead(@Body request: MarkReadDTO)
 }
