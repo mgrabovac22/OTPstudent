@@ -1,6 +1,8 @@
 const UserDAO = require("../dao/userDAO.js");
 const { createAccessToken, checkToken, createRefreshToken } = require("../modules/jwtModul.js");
 const bcrypt = require("bcrypt");
+const fs = require("node:fs");
+const path = require("node:path");
 
 class RESTuser {
 
@@ -20,7 +22,8 @@ class RESTuser {
       areaOfStudy,
       imagePath,
       cvPath,
-      dateOfBirth
+      dateOfBirth,
+      Higher_Education_Body_id
     } = req.body;
 
     if (
@@ -30,9 +33,8 @@ class RESTuser {
       !email ||
       !yearOfStudy ||
       !areaOfStudy ||
-      !imagePath ||
-      !cvPath ||
-      !dateOfBirth
+      !dateOfBirth ||
+      !Higher_Education_Body_id
     ) {
       return res.status(400).json({ error: "Required data missing!" });
     }
@@ -50,13 +52,23 @@ class RESTuser {
         password: hashedPassword,
         imagePath,
         cvPath,
-        dateOfBirth
+        dateOfBirth,
+        Higher_Education_Body_id
       };
 
       const response = await this.userDAO.add(user);
 
       if (response) {
-        res.status(201).json({ success: "User registered successfully!" });
+        const tokenData = { email: user.email };
+        const accessToken = createAccessToken(tokenData);
+        const refreshToken = createRefreshToken(tokenData);
+
+        res.status(201).json(
+          {
+            success: "User registered successfully!",
+            accessToken: accessToken,
+            refreshToken: refreshToken
+          });
       } else {
         res.status(400).json({ error: "User registration failed!" });
       }
@@ -156,7 +168,16 @@ class RESTuser {
 
       delete user[0].password;
 
-      res.status(200).json(user[0]);
+      let imageBase64 = null;
+
+      if (user[0].imagePath) {
+          imageBase64 = loadImageBase64(user[0].imagePath);
+      }
+
+      res.status(200).json({
+          ...user[0],
+          image: imageBase64
+      });
     } catch (err) {
       console.error("Error in getCurrentUser:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -173,6 +194,19 @@ class RESTuser {
       const updatePromises = [];
 
       for (const [key, value] of Object.entries(updatedUserData)) {
+        if (value === null || value === undefined || value === "") {
+            continue;
+        }
+        
+        const allowedColumns = [
+            'firstName', 'lastName', 'yearOfStudy', 'areaOfStudy', 
+            'password', 'imagePath', 'cvPath', 'dateOfBirth'
+        ];
+        if (!allowedColumns.includes(key)) continue;
+        let valueToSave = value;
+        if (key === 'dateOfBirth' && value.includes('T')) {
+            valueToSave = value.split('T')[0];
+        }
         if (key === 'password') {
           const saltRounds = 10;
           const hashedPassword = await bcrypt.hash(value, saltRounds);
@@ -180,11 +214,14 @@ class RESTuser {
           continue;
         }
         
-        updatePromises.push(this.userDAO.update(email, key, value));
+        updatePromises.push(this.userDAO.update(email, key, valueToSave));
+      }
+
+      if (updatePromises.length === 0) {
+         return res.status(200).json({ success: "Nothing to update or invalid fields." });
       }
 
       const results = await Promise.all(updatePromises);
-
       const hasFailures = results.some(result => !result);
 
       if (!hasFailures) {
@@ -216,6 +253,92 @@ class RESTuser {
       res.status(500).json({ error: "Internal server error" });
     }
   }
+
+  async uploadCV(req, res) {
+    res.type("application/json");
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded!" });
+        }
+
+        const email = req.user.email;
+        const namePart = email.split("@")[0];
+        const cvPath = `/resources/uploads/cv/${namePart}.pdf`;
+
+        const result = await this.userDAO.update(email, "cvPath", cvPath);
+
+        if (result) {
+            return res.status(200).json({
+                success: "CV uploaded successfully!",
+                cvPath: cvPath
+            });
+        }
+
+        res.status(400).json({ error: "Database update failed!" });
+
+    } catch (err) {
+        console.error("Error in uploadCV:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  async uploadImage(req, res) {
+    res.type("application/json");
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No image uploaded!" });
+        }
+
+        const email = req.user.email;
+        const namePart = email.split("@")[0];
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        
+        const imagePath = `/resources/uploads/images/${namePart}${ext}`;
+
+        const result = await this.userDAO.update(email, "imagePath", imagePath);
+
+        if (result) {
+            return res.status(200).json({
+                success: "Image uploaded successfully!",
+                imagePath: imagePath
+            });
+        }
+
+        res.status(400).json({ error: "Database update failed!" });
+
+    } catch (err) {
+        console.error("Error in uploadImage:", err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+  }
+}
+
+
+function loadImageBase64(relativePath) {
+    try {
+        const absPath = path.join(__dirname, "..", "..", relativePath);
+
+        const dir = path.dirname(absPath);
+
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+            console.log("Created missing image directory:", dir);
+        }
+
+        if (!fs.existsSync(absPath)) {
+            console.warn("Image file does not exist:", absPath);
+            return null;
+        }
+
+        const imageBuffer = fs.readFileSync(absPath);
+        const extension = path.extname(relativePath).substring(1);
+        return `data:image/${extension};base64,${imageBuffer.toString("base64")}`;
+    } catch (err) {
+        console.error("Greška kod učitavanja slike:", err);
+        return null;
+    }
 }
 
 module.exports = RESTuser;

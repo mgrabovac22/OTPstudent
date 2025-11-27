@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS `User` (
   `password` VARCHAR(70) NOT NULL,
   `yearOfStudy` INT NOT NULL,
   `areaOfStudy` VARCHAR(100) NOT NULL,
-  `imagePath` VARCHAR(100) NOT NULL,
-  `cvPath` VARCHAR(100) NOT NULL,
+  `imagePath` VARCHAR(100),
+  `cvPath` VARCHAR(100),
   `dateOfBirth` DATE NOT NULL,
   `experiencePoints` INT NOT NULL DEFAULT 0,
   `unlockedLevel` INT NOT NULL DEFAULT 1,
@@ -399,7 +399,8 @@ ENGINE = InnoDB;
 INSERT INTO `Higher_Education_Body` (`id`, `name`) VALUES
 (1, 'Sveučilište u Zagrebu, FER'),
 (2, 'Veleučilište u Rijeci'),
-(3, 'Ekonomski Fakultet Split');
+(3, 'Ekonomski Fakultet Split'),
+(4, 'Fakultet organizacije i informatike Varaždin');
 
 -- Student_Internship_Job (Tipovi poslova/praksi koje student očekuje)
 INSERT INTO `Student_Internship_Job` (`id`, `name`) VALUES

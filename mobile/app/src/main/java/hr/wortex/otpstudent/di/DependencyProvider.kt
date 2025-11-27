@@ -5,10 +5,13 @@ import hr.wortex.otpstudent.data.local.TokenStorage
 import hr.wortex.otpstudent.data.remote.AuthInterceptor
 import hr.wortex.otpstudent.data.remote.api.IOtpApiService
 import hr.wortex.otpstudent.data.remote.datasource.AuthRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.InstitutionRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
 import hr.wortex.otpstudent.domain.repository.AuthRepository
+import hr.wortex.otpstudent.domain.repository.InstitutionRepository
 import hr.wortex.otpstudent.domain.repository.TokenRepository
 import hr.wortex.otpstudent.domain.repository.UserRepository
+import hr.wortex.otpstudent.domain.usecase.GetInstitutions
 import hr.wortex.otpstudent.domain.usecase.Login
 import hr.wortex.otpstudent.domain.usecase.Register
 import hr.wortex.otpstudent.data.remote.datasource.InternshipRemoteDataSource

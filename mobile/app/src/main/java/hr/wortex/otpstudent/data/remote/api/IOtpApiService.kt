@@ -6,10 +6,15 @@ import hr.wortex.otpstudent.data.remote.dto.InternshipJobDto
 import hr.wortex.otpstudent.data.remote.dto.LoginDto
 import hr.wortex.otpstudent.data.remote.dto.LoginResponseDto
 import hr.wortex.otpstudent.data.remote.dto.RefreshDto
+import hr.wortex.otpstudent.data.remote.dto.RegisterDto
+import hr.wortex.otpstudent.data.remote.dto.RegisterResponseDto
+import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.data.remote.dto.UserDto
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
@@ -26,6 +31,12 @@ interface IOtpApiService {
         @Header("x-mobile") isMobile: String = "true",
         @Body req: LoginDto
     ): LoginResponseDto
+
+    @POST("api/register")
+    suspend fun register(
+        @Header("x-mobile") isMobile: String = "true",
+        @Body req: RegisterDto
+    ): RegisterResponseDto
 
     @POST("api/refresh")
     suspend fun refresh(@Body body: Map<String, String>): RefreshDto
@@ -48,8 +59,7 @@ interface IOtpApiService {
     ): Map<String, String>
 
     @GET("api/institutions")
-    suspend fun getInstitutions(
-    ): List<InstitutionDto>
+    suspend fun getInstitutions(): List<InstitutionDto>
 
     @GET("api/internship/jobs")
     suspend fun getInternshipJobs(): List<InternshipJobDto>

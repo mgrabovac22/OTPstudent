@@ -47,6 +47,7 @@ server.use(session({
 }));
 
 const restUser = new RESTuser();
+const restInstitution = new RESTInstitution();
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
@@ -101,7 +102,7 @@ server.get("/api/logout", (req, res) => {
 });
 
 server.all(/(.*)/, (req, res, next) => {
-    if (req.path === "/login" || req.path === "/register" || req.path === "/getJWT") {
+    if (req.path === "/login" || req.path === "/register" || req.path === "/getJWT" || req.path === "/api/institutions") {
         return next();
     }
     
