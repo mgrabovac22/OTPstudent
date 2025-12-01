@@ -6,9 +6,11 @@ import hr.wortex.otpstudent.data.remote.AuthInterceptor
 import hr.wortex.otpstudent.data.remote.api.IOtpApiService
 import hr.wortex.otpstudent.data.remote.datasource.AuthRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.InstitutionRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.InfoContentRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
 import hr.wortex.otpstudent.domain.repository.AuthRepository
 import hr.wortex.otpstudent.domain.repository.InstitutionRepository
+import hr.wortex.otpstudent.domain.repository.InfoContentRepository
 import hr.wortex.otpstudent.domain.repository.TokenRepository
 import hr.wortex.otpstudent.domain.repository.UserRepository
 import hr.wortex.otpstudent.domain.usecase.GetInstitutions
@@ -18,6 +20,9 @@ import hr.wortex.otpstudent.ui.unlock.UnlockViewModelFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import hr.wortex.otpstudent.domain.usecase.GetInfoContentDetail
+import hr.wortex.otpstudent.domain.usecase.GetUser
+import hr.wortex.otpstudent.domain.usecase.MarkInfoContentRead
 
 object DependencyProvider {
 
@@ -61,5 +66,13 @@ object DependencyProvider {
     val institutionRepository by lazy { InstitutionRepository(InstitutionRemoteDataSource(apiServiceWithInterceptor)) }
     val getAllInstitutions by lazy { GetInstitutions(institutionRepository) }
 
+    val infoContentRepository by lazy { InfoContentRepository(InfoContentRemoteDataSource(apiServiceWithInterceptor)) }
+
     val unlockViewModelFactory by lazy { UnlockViewModelFactory(userRepository) }
+
+    val getInfoContentDetailUseCase by lazy { GetInfoContentDetail(infoContentRepository) }
+
+    val markInfoContentReadUseCase by lazy { MarkInfoContentRead(infoContentRepository) }
+
+    val getUserUseCase by lazy { GetUser(userRepository) }
 }

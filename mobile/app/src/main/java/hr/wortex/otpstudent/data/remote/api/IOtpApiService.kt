@@ -9,6 +9,8 @@ import hr.wortex.otpstudent.data.remote.dto.RegisterResponseDto
 import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.data.remote.dto.UserDto
 import okhttp3.MultipartBody
+import hr.wortex.otpstudent.data.remote.dto.InfoDTO
+import hr.wortex.otpstudent.data.remote.dto.MarkReadDTO
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -16,6 +18,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface IOtpApiService {
 
@@ -58,4 +61,14 @@ interface IOtpApiService {
     @GET("api/institutions")
     suspend fun getInstitutions(
     ): List<InstitutionDto>
+
+    @GET("api/info-content")
+    suspend fun getInfoContent(
+    ): List<InfoDTO>
+
+    @GET("api/info-content/{id}")
+    suspend fun getInfoContentById(@Path("id") id: Int): InfoDTO
+
+    @POST("api/info-content/read")
+    suspend fun markContentAsRead(@Body request: MarkReadDTO)
 }

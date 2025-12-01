@@ -99,6 +99,7 @@ data class EditProfileState(
     val errorMessage: String? = null,
     val isSaved: Boolean = false,
 
+    val userId: Int = 0,
     val firstName: String = "",
     val lastName: String = "",
     val yearOfStudy: String = "",
@@ -140,6 +141,7 @@ class EditProfileViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
+                        userId = user.id,
                         firstName = user.firstName ?: "",
                         lastName = user.lastName ?: "",
                         yearOfStudy = user.yearOfStudy?.toString() ?: "",
@@ -354,6 +356,7 @@ class EditProfileViewModel(
                 val apiDateOfBirth = DateUtils.formatForApi(currentState.dateOfBirth)
 
                 val domainUser = User(
+                    id = currentState.userId,
                     firstName = currentState.firstName.trim(),
                     lastName = currentState.lastName.trim(),
                     email = currentState.email.trim(),

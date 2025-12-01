@@ -70,6 +70,16 @@ class UserDAO {
         return await this.db.executeQuery(sql, [elementValue, email]);
     }
 
+    async addExperiencePoints(userId, points) {
+        const sql = `
+            UPDATE User 
+            SET experiencePoints = experiencePoints + ? 
+            WHERE id = ?
+        `;
+        
+        return await this.db.executeQuery(sql, [points, userId]);
+    }
+
     async delete(email) {
         return await this.db.executeQuery("DELETE FROM User WHERE email = ?", [email]);
     }

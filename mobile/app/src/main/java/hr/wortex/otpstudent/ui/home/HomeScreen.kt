@@ -22,7 +22,7 @@ import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.domain.usecase.GetUser
 
 @Composable
-fun HomeScreen(paddingValues: PaddingValues) {
+fun HomeScreen(paddingValues: PaddingValues, onRewardClick: () -> Unit = {}) {
     val getUserUseCase = remember { GetUser(DependencyProvider.userRepository) }
     val viewModel = remember { HomeViewModel(getUserUseCase) }
     val uiState by viewModel.uiState.collectAsState()
@@ -85,9 +85,7 @@ fun HomeScreen(paddingValues: PaddingValues) {
                             modifier = Modifier.padding(30.dp,10.dp).fillMaxWidth()
                         ) {
                             Button(
-                                onClick = {
-                                    // TODO: implement logic
-                                },
+                                onClick = { onRewardClick() },
                                 modifier = Modifier.padding(10.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b)),
                                 shape = RoundedCornerShape(16.dp)

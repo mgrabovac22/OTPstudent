@@ -12,6 +12,8 @@ const { createAccessToken, checkToken, createRefreshToken } = require("./modules
 const RESTuser = require("./rest/RESTuser.js");
 const {uploadCV, uploadImage} = require("./rest/RESTupload.js");
 const RESTInstitution = require("./rest/RESTInstitution.js");
+const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
+const RestUserRead = require("./rest/RESTuserRead.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -45,8 +47,10 @@ server.use(session({
     cookie: { secure: true, sameSite: "Strict", maxAge: 3600000 }
 }));
 
+const restInformationalContent = new RESTinformationalContent();
 const restUser = new RESTuser();
 const restInstitution = new RESTInstitution();
+const restUserRead = new RestUserRead();
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
@@ -138,6 +142,12 @@ server.post("/api/upload-cv", uploadCV.single("cv"), restUser.uploadCV.bind(rest
 server.post("/api/upload-image", uploadImage.single("image"), restUser.uploadImage.bind(restUser));
 
 server.get("/api/institutions", restInstitution.getAllInstitutions.bind(restInstitution));
+
+server.post("/api/post-info-content", restInformationalContent.post.bind(restInformationalContent));
+server.get("/api/info-content", restInformationalContent.get.bind(restInformationalContent));
+server.get("/api/info-content/:id", restInformationalContent.getById.bind(restInformationalContent));
+
+server.post("/api/info-content/read", restUserRead.markContentRead.bind(restUserRead));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`

@@ -16,6 +16,10 @@ import hr.wortex.otpstudent.ui.editProfile.EditProfileScreen
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import hr.wortex.otpstudent.ui.registration.RegistrationScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoContentScreen
+import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoDetailScreen
 import hr.wortex.otpstudent.ui.unlock.UnlockScreen
 
 @Composable
@@ -41,7 +45,7 @@ fun MainNavGraph(navController: NavHostController) {
                 BusinessScreen()
             }
             composable("home_screen") {
-                HomeScreen(innerPadding)
+                HomeScreen(innerPadding, onRewardClick = {navController.navigate("reward_screen")})
             }
             composable("profile_screen") {
                 ProfileScreen(onEditProfile = {
@@ -66,6 +70,19 @@ fun MainNavGraph(navController: NavHostController) {
             }
             composable("unlock_screen") {
                 UnlockScreen(navController = navController)
+            }
+
+            composable("reward_screen") {
+                InfoContentScreen(paddingValues = innerPadding, navController = navController)
+            }
+
+            composable(
+                route = "info_detail_screen/{contentId}",
+                arguments = listOf(navArgument("contentId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val contentId = backStackEntry.arguments?.getInt("contentId") ?: 0
+
+                InfoDetailScreen(contentId = contentId, navController = navController)
             }
         }
     }
