@@ -56,8 +56,14 @@ fun MainNavGraph(navController: NavHostController) {
                 CareerScreen(navController = navController)
             }
             composable("home_screen") {
-                HomeScreen(innerPadding)
+                HomeScreen(
+                    paddingValues = innerPadding,
+                    onRewardClick = {
+                        navController.navigate("reward_screen")
+                    }
+                )
             }
+
             composable("profile_screen") {
                 ProfileScreen(onEditProfile = {
                     navController.navigate("edit_profile_screen")
