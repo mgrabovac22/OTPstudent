@@ -1,6 +1,8 @@
 package hr.wortex.otpstudent.data.remote.api
 
 import hr.wortex.otpstudent.data.remote.dto.InstitutionDto
+import hr.wortex.otpstudent.data.remote.dto.InternshipApplicationDto
+import hr.wortex.otpstudent.data.remote.dto.InternshipJobDto
 import hr.wortex.otpstudent.data.remote.dto.LoginDto
 import hr.wortex.otpstudent.data.remote.dto.LoginResponseDto
 import hr.wortex.otpstudent.data.remote.dto.RefreshDto
@@ -71,4 +73,12 @@ interface IOtpApiService {
 
     @POST("api/info-content/read")
     suspend fun markContentAsRead(@Body request: MarkReadDTO)
+
+    @GET("api/internship/jobs")
+    suspend fun getInternshipJobs(): List<InternshipJobDto>
+
+    @POST("api/internship/apply")
+    suspend fun applyToInternship(
+        @Body application: InternshipApplicationDto
+    ): retrofit2.Response<Unit>
 }

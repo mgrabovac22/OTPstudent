@@ -14,6 +14,7 @@ const {uploadCV, uploadImage} = require("./rest/RESTupload.js");
 const RESTInstitution = require("./rest/RESTInstitution.js");
 const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
 const RestUserRead = require("./rest/RESTuserRead.js");
+const RESTinternship = require("./rest/RESTinternship.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -148,6 +149,14 @@ server.get("/api/info-content", restInformationalContent.get.bind(restInformatio
 server.get("/api/info-content/:id", restInformationalContent.getById.bind(restInformationalContent));
 
 server.post("/api/info-content/read", restUserRead.markContentRead.bind(restUserRead));
+
+const restInternship = new RESTinternship();
+
+server.get("/api/internship/jobs", restInternship.listJobs.bind(restInternship));
+server.post("/api/internship/apply", restInternship.apply.bind(restInternship));
+server.get("/api/internship/applications", restInternship.listUserApplications.bind(restInternship));
+server.get("/api/internship/applications/:id", restInternship.getApplication.bind(restInternship));
+server.delete("/api/internship/applications/:id", restInternship.deleteApplication.bind(restInternship));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`
