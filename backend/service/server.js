@@ -141,6 +141,7 @@ server.put("/api/update-user", restUser.updateUser.bind(restUser));
 server.delete("/api/delete-user", restUser.deleteUser.bind(restUser));
 server.post("/api/upload-cv", uploadCV.single("cv"), restUser.uploadCV.bind(restUser));
 server.post("/api/upload-image", uploadImage.single("image"), restUser.uploadImage.bind(restUser));
+server.post("/api/change-password", restUser.changePassword.bind(restUser));
 
 server.get("/api/institutions", restInstitution.getAllInstitutions.bind(restInstitution));
 

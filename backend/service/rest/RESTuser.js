@@ -3,11 +3,13 @@ const { createAccessToken, checkToken, createRefreshToken } = require("../module
 const bcrypt = require("bcrypt");
 const fs = require("node:fs");
 const path = require("node:path");
+const { transporter } = require("../modules/nodemailer.js");
 
 class RESTuser {
 
   constructor() {
     this.userDAO = new UserDAO();
+    this.transporter = transporter;
   }
 
   async postUser(req, res) {
@@ -311,6 +313,54 @@ class RESTuser {
     } catch (err) {
         console.error("Error in uploadImage:", err);
         res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  async changePassword(req, res) {
+    res.type("application/json");
+  
+    const { email, password, oldPassword } = req.body;
+  
+    if (!email || !password || !oldPassword) {
+      res.status(400).json({ error: "Required data missing!" });
+      return;
+    }
+  
+    try {
+      const user = await this.userDAO.getUserByEmail(email);
+      if (!user?.[0]?.password) {
+        res.status(404).json({ error: "User not found." });
+        return;
+      }
+  
+      const isMatch = await bcrypt.compare(oldPassword, user[0]?.password);
+      if (!isMatch) {
+        res.status(401).json({ error: "Incorrect old password." });
+        return;
+      }
+  
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);      
+  
+      await this.userDAO.changePassword(hashedPassword, email);
+
+      const mailOptions = {
+        from: 'info.otp.student@gmail.com',
+        to: user[0]?.email,
+        subject: 'Promjena lozinke',
+        text: `Poštovani ${user[0]?.firstName} ${user[0]?.lastName},\n\nVaša lozinka je uspješno promijenjena.\n\nAko niste vi inicirali ovu promjenu, molimo vas da nas odmah kontaktirate na mail: info.otp.student@gmail.com.\nLijep pozdrav\nOTP student tim`
+      };
+      
+      this.transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.error('Greška pri slanju e-maila:', error);
+        }
+      });      
+  
+      res.status(200).json({ success: "Password changed." });
+    } catch (err) {
+      console.error("Error changing password: ", err);
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 }
