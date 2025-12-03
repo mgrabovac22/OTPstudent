@@ -118,7 +118,18 @@ data class EditProfileState(
     val yearOfStudyError: String? = null,
     val areaOfStudyError: String? = null,
     val dateOfBirthError: String? = null,
-    val emailError: String? = null
+    val emailError: String? = null,
+
+    val isChangePasswordModalVisible: Boolean = false,
+    val oldPasswordInput: String = "",
+    val newPasswordInput: String = "",
+    val newPasswordConfirmInput: String = "",
+
+    val oldPasswordError: String? = null,
+    val newPasswordError: String? = null,
+    val newPasswordConfirmError: String? = null,
+    val changePasswordErrorMessage: String? = null,
+    val isPasswordChanged: Boolean = false
 )
 
 class EditProfileViewModel(
