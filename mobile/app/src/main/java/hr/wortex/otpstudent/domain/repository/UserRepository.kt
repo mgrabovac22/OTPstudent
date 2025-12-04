@@ -7,6 +7,7 @@ import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.domain.model.User
 import hr.wortex.otpstudent.domain.repository.interfaces.IUserRepository
 import okhttp3.MultipartBody
+import retrofit2.Response
 
 class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
     IUserRepository {
@@ -52,9 +53,7 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
         return response["success"] != null
     }
 
-    override suspend fun changePassword(oldPassword: String, password: String): Boolean {
-        Log.d(ContentValues.TAG, "Attempting to change password for useraaaaaaaaa repo.")
-        val response = remoteDataSource.changePassword(oldPassword, password)
-        return response["success"] != null
+    override suspend fun changePassword(oldPassword: String, password: String): Response<Map<String, String>> {
+        return remoteDataSource.changePassword(oldPassword, password)
     }
 }

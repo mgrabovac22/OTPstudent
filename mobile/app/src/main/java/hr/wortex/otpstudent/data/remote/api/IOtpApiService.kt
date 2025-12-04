@@ -14,6 +14,7 @@ import hr.wortex.otpstudent.data.remote.dto.UserDto
 import okhttp3.MultipartBody
 import hr.wortex.otpstudent.data.remote.dto.InfoDTO
 import hr.wortex.otpstudent.data.remote.dto.MarkReadDTO
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -86,6 +87,6 @@ interface IOtpApiService {
     @POST("api/change-password")
     suspend fun changePassword(
         @Body body: ChangePasswordDto
-    ): Map<String, String>
+    ): Response<Map<String, String>>
 
 }

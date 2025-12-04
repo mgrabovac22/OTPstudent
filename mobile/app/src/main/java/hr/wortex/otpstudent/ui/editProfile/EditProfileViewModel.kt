@@ -120,7 +120,7 @@ data class EditProfileState(
     val dateOfBirthError: String? = null,
     val emailError: String? = null,
 
-    val isChangePasswordModalVisible: Boolean = false,
+    val isChangePasswordModalVisible: Boolean = true,
     val oldPasswordInput: String = "",
     val newPasswordInput: String = "",
     val newPasswordConfirmInput: String = "",
@@ -205,6 +205,10 @@ class EditProfileViewModel(
             val formattedDate = DateUtils.convertMillisToDisplayDate(it)
             _uiState.update { state -> state.copy(dateOfBirth = formattedDate, dateOfBirthError = null) }
         }
+    }
+
+    private fun isPasswordValid(pw: String): Boolean {
+        return pw.length in 8..64
     }
 
     fun uploadImage(inputStream: InputStream, fileName: String, mimeType: String) {
@@ -367,7 +371,8 @@ class EditProfileViewModel(
                 oldPasswordError = null,
                 newPasswordError = null,
                 newPasswordConfirmError = null,
-                changePasswordErrorMessage = null
+                changePasswordErrorMessage = null,
+                isPasswordChanged = false
             )
         }
     }
@@ -385,64 +390,117 @@ class EditProfileViewModel(
     }
 
     fun confirmPasswordChange() {
-        val s = _uiState.value
-        var hasError = false
-        var oldErr: String? = null
-        var newErr: String? = null
-        var confirmErr: String? = null
+        viewModelScope.launch {
+            val state = _uiState.value
+            var hasError = false
 
-        if (s.oldPasswordInput.isBlank()) {
-            oldErr = "Unesi staru lozinku."
-            hasError = true
-        }
+            if (state.oldPasswordInput.isBlank()) {
+                _uiState.update { it.copy(oldPasswordError = "Unesi staru lozinku.") }
+                hasError = true
+            }
 
-        if (s.newPasswordInput.length < 6) {
-            newErr = "Nova lozinka mora imati barem 6 znakova."
-            hasError = true
-        }
+            if (!isPasswordValid(state.newPasswordInput)) {
+                _uiState.update {
+                    it.copy(newPasswordError = "Lozinka mora biti između 8 i 64 znaka.")
+                }
+                hasError = true
+            }
 
-        if (s.newPasswordInput != s.newPasswordConfirmInput) {
-            confirmErr = "Lozinke se ne podudaraju."
-            hasError = true
-        }
+            if (state.newPasswordInput != state.newPasswordConfirmInput) {
+                _uiState.update {
+                    it.copy(newPasswordConfirmError = "Lozinke se ne podudaraju.")
+                }
+                hasError = true
+            }
 
-        if (hasError) {
+            if (hasError) {
+                return@launch
+            }
+
             _uiState.update {
                 it.copy(
-                    oldPasswordError = oldErr,
-                    newPasswordError = newErr,
-                    newPasswordConfirmError = confirmErr
+                    isLoading = true,
+                    changePasswordErrorMessage = null,
+                    oldPasswordError = null,
+                    newPasswordError = null,
+                    newPasswordConfirmError = null
                 )
             }
-            return
-        }
 
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, changePasswordErrorMessage = null) }
+            if (state.newPasswordInput != state.newPasswordConfirmInput) {
+                _uiState.update {
+                    it.copy(
+                        newPasswordConfirmError = "Lozinke se ne podudaraju.",
+                        isLoading = false
+                    )
+                }
+                return@launch
+            }
 
             try {
-                val result = userRepository.changePassword(
-                    s.oldPasswordInput,
-                    s.newPasswordInput
+                val resp = userRepository.changePassword(
+                    oldPassword = state.oldPasswordInput,
+                    password = state.newPasswordInput
                 )
 
-                if (result) {
-                    hidePasswordDialog()
-                    saveProfile()
-                } else {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            changePasswordErrorMessage = "Pogrešna stara lozinka."
-                        )
+                val code = resp.code()
+                val errorText = resp.errorBody()?.string()
+
+                when (code) {
+
+                    200 -> {
+                        _uiState.update {
+                            it.copy(
+                                isPasswordChanged = true,
+                                isLoading = false,
+                                isChangePasswordModalVisible = true
+                            )
+                        }
+                    }
+
+                    400 -> {
+                        _uiState.update {
+                            it.copy(
+                                changePasswordErrorMessage = "Nisu uneseni svi potrebni podaci.",
+                                isLoading = false
+                            )
+                        }
+                    }
+
+                    401 -> {
+                        _uiState.update {
+                            it.copy(
+                                oldPasswordError = "Stara lozinka nije točna.",
+                                isLoading = false
+                            )
+                        }
+                    }
+
+                    404 -> {
+                        _uiState.update {
+                            it.copy(
+                                changePasswordErrorMessage = "Korisnik nije pronađen.",
+                                isLoading = false
+                            )
+                        }
+                    }
+
+                    else -> {
+                        _uiState.update {
+                            it.copy(
+                                changePasswordErrorMessage =
+                                errorText ?: "Dogodila se nepoznata pogreška.",
+                                isLoading = false
+                            )
+                        }
                     }
                 }
 
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
-                        isLoading = false,
-                        changePasswordErrorMessage = e.message ?: "Greška."
+                        changePasswordErrorMessage = "Greška s mrežom. Provjerite vezu.",
+                        isLoading = false
                     )
                 }
             }
