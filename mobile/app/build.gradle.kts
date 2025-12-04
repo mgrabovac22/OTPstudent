@@ -97,4 +97,5 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     implementation("androidx.biometric:biometric:1.1.0")
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
 }

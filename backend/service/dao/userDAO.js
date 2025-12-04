@@ -11,9 +11,8 @@ class UserDAO {
     }
 
     async changePassword(password, email) {
-        const hashedPassword = await bcrypt.hash(password, 10);
         const sql = `UPDATE User SET password = ? WHERE email = ?`;
-        return await this.db.executeQuery(sql, [hashedPassword, email]);
+        return await this.db.executeQuery(sql, [password, email]);
     }
 
     async add(user) {

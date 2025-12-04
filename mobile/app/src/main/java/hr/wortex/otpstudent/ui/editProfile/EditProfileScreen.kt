@@ -1,5 +1,6 @@
 package hr.wortex.otpstudent.ui.editProfile
 
+import ChangePasswordDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -114,6 +115,7 @@ fun EditProfileContent(
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
 
     val imagePickerLauncher = rememberFilePickerLauncher(
         type = FilePickerFileType.Image,
@@ -317,7 +319,24 @@ fun EditProfileContent(
             )
         }
 
+        Text(
+            text = "Promijeni lozinku",
+            color = ProfileColors.LogoTeal,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            modifier = Modifier
+                .padding(top = Dimens.PaddingLarge)
+                .clickable { viewModel.showPasswordDialog() }
+        )
+
         Spacer(Modifier.height(32.dp))
+    }
+
+    if (state.isChangePasswordModalVisible) {
+        ChangePasswordDialog(
+            viewModel = viewModel,
+            onDismiss = { viewModel.hidePasswordDialog() }
+        )
     }
 }
 
