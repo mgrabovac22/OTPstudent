@@ -1,159 +1,150 @@
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import hr.wortex.otpstudent.ui.profil.ProfileColors
-
+import hr.wortex.otpstudent.ui.profil.edit.EditProfileViewModel
 
 @Composable
 fun ChangePasswordDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (oldPass: String, newPass: String, confirmPass: String) -> Unit
+    viewModel: EditProfileViewModel,
+    onDismiss: () -> Unit
 ) {
-    var oldPassword by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    val state by viewModel.uiState.collectAsState()
 
     var showOldPassword by remember { mutableStateOf(false) }
     var showNewPassword by remember { mutableStateOf(false) }
     var showConfirmPassword by remember { mutableStateOf(false) }
 
-    val isButtonEnabled = oldPassword.isNotEmpty() && newPassword.isNotEmpty() && newPassword == confirmPassword
-
     val CustomGreen = Color(0xFF1B6E2A)
-
     val customTextFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = CustomGreen,
         focusedLabelColor = CustomGreen,
         cursorColor = CustomGreen,
-
         unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
         errorBorderColor = MaterialTheme.colorScheme.error,
         errorLabelColor = MaterialTheme.colorScheme.error
     )
 
+    if (state.isPasswordChanged) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Lozinka promijenjena", fontWeight = FontWeight.Bold, color = CustomGreen) },
+            text = { Text("Vaša lozinka je uspješno promijenjena.") },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("OK", color = CustomGreen)
+                }
+            }
+        )
+        return
+    }
+
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {},
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 6.dp,
-        title = {
-            Text("Promijeni lozinku", fontWeight = FontWeight.Bold, color = CustomGreen)
-        },
+        title = { Text("Promijeni lozinku", fontWeight = FontWeight.Bold, color = CustomGreen) },
         text = {
-            Column(
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
+            Column(modifier = Modifier.padding(top = 8.dp)) {
+
                 OutlinedTextField(
-                    value = oldPassword,
-                    onValueChange = { oldPassword = it },
+                    value = state.oldPasswordInput,
+                    onValueChange = viewModel::onOldPasswordChange,
                     label = { Text("Stara lozinka") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = customTextFieldColors,
                     visualTransformation = if (showOldPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val image = if (showOldPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val icon = if (showOldPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                         IconButton(onClick = { showOldPassword = !showOldPassword }) {
-                            Icon(imageVector = image, contentDescription = "Prikaži/sakrij lozinku", tint = CustomGreen)
+                            Icon(icon, contentDescription = null, tint = CustomGreen)
                         }
-                    }
+                    },
+                    isError = state.oldPasswordError != null
                 )
+                state.oldPasswordError?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+
+                Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
+                    value = state.newPasswordInput,
+                    onValueChange = viewModel::onNewPasswordChange,
                     label = { Text("Nova lozinka") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = customTextFieldColors,
                     visualTransformation = if (showNewPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val image = if (showNewPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val icon = if (showNewPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                         IconButton(onClick = { showNewPassword = !showNewPassword }) {
-                            Icon(imageVector = image, contentDescription = "Prikaži/sakrij lozinku", tint = CustomGreen)
+                            Icon(icon, contentDescription = null, tint = CustomGreen)
                         }
-                    }
+                    },
+                    isError = state.newPasswordError != null
                 )
+                state.newPasswordError?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+
+                Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
+                    value = state.newPasswordConfirmInput,
+                    onValueChange = viewModel::onNewPasswordConfirmChange,
                     label = { Text("Potvrda nove lozinke") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    isError = newPassword.isNotEmpty() && newPassword != confirmPassword,
                     colors = customTextFieldColors,
                     visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val image = if (showConfirmPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val icon = if (showConfirmPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                         IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
-                            Icon(imageVector = image, contentDescription = "Prikaži/sakrij lozinku", tint = CustomGreen)
+                            Icon(icon, contentDescription = null, tint = CustomGreen)
                         }
-                    }
+                    },
+                    isError = state.newPasswordConfirmError != null
                 )
+                state.newPasswordConfirmError?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
 
-                if (newPassword.isNotEmpty() && newPassword != confirmPassword) {
-                    Text(
-                        text = "Lozinke se ne podudaraju",
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 4.dp, start = 4.dp)
-                    )
+                state.changePasswordErrorMessage?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
                 }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(oldPassword, newPassword, confirmPassword) },
-                enabled = isButtonEnabled,
+                onClick = { viewModel.confirmPasswordChange() },
+                enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = ProfileColors.ButtonBackground,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Potvrdi")
+                if (state.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                else Text("Potvrdi")
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
+            TextButton(onClick = {
+                viewModel.hidePasswordDialog()
+                onDismiss()
+            }) {
                 Text("Odustani", color = CustomGreen)
             }
         }

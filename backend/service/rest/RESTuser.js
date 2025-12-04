@@ -319,12 +319,14 @@ class RESTuser {
   async changePassword(req, res) {
     res.type("application/json");
   
-    const { email, password, oldPassword } = req.body;
+    const { password, oldPassword } = req.body;    
   
-    if (!email || !password || !oldPassword) {
+    if (!password || !oldPassword) {
       res.status(400).json({ error: "Required data missing!" });
       return;
     }
+
+    const email = req.user.email;        
   
     try {
       const user = await this.userDAO.getUserByEmail(email);
@@ -335,6 +337,7 @@ class RESTuser {
   
       const isMatch = await bcrypt.compare(oldPassword, user[0]?.password);
       if (!isMatch) {
+        
         res.status(401).json({ error: "Incorrect old password." });
         return;
       }

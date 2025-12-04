@@ -353,6 +353,102 @@ class EditProfileViewModel(
         return !hasError
     }
 
+    fun showPasswordDialog() {
+        _uiState.update { it.copy(isChangePasswordModalVisible = true) }
+    }
+
+    fun hidePasswordDialog() {
+        _uiState.update {
+            it.copy(
+                isChangePasswordModalVisible = false,
+                oldPasswordInput = "",
+                newPasswordInput = "",
+                newPasswordConfirmInput = "",
+                oldPasswordError = null,
+                newPasswordError = null,
+                newPasswordConfirmError = null,
+                changePasswordErrorMessage = null
+            )
+        }
+    }
+
+    fun onOldPasswordChange(v: String) {
+        _uiState.update { it.copy(oldPasswordInput = v, oldPasswordError = null) }
+    }
+
+    fun onNewPasswordChange(v: String) {
+        _uiState.update { it.copy(newPasswordInput = v, newPasswordError = null) }
+    }
+
+    fun onNewPasswordConfirmChange(v: String) {
+        _uiState.update { it.copy(newPasswordConfirmInput = v, newPasswordConfirmError = null) }
+    }
+
+    fun confirmPasswordChange() {
+        val s = _uiState.value
+        var hasError = false
+        var oldErr: String? = null
+        var newErr: String? = null
+        var confirmErr: String? = null
+
+        if (s.oldPasswordInput.isBlank()) {
+            oldErr = "Unesi staru lozinku."
+            hasError = true
+        }
+
+        if (s.newPasswordInput.length < 6) {
+            newErr = "Nova lozinka mora imati barem 6 znakova."
+            hasError = true
+        }
+
+        if (s.newPasswordInput != s.newPasswordConfirmInput) {
+            confirmErr = "Lozinke se ne podudaraju."
+            hasError = true
+        }
+
+        if (hasError) {
+            _uiState.update {
+                it.copy(
+                    oldPasswordError = oldErr,
+                    newPasswordError = newErr,
+                    newPasswordConfirmError = confirmErr
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, changePasswordErrorMessage = null) }
+
+            try {
+                val result = userRepository.changePassword(
+                    s.oldPasswordInput,
+                    s.newPasswordInput
+                )
+
+                if (result) {
+                    hidePasswordDialog()
+                    saveProfile()
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            changePasswordErrorMessage = "Pogrešna stara lozinka."
+                        )
+                    }
+                }
+
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        changePasswordErrorMessage = e.message ?: "Greška."
+                    )
+                }
+            }
+        }
+    }
+
     fun saveProfile() {
         viewModelScope.launch {
             if (!validateAndUpdateState()) {

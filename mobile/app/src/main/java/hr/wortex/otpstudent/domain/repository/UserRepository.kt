@@ -1,5 +1,7 @@
 package hr.wortex.otpstudent.domain.repository
 
+import android.content.ContentValues
+import android.util.Log
 import hr.wortex.otpstudent.data.remote.datasource.UsersRemoteDataSource
 import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.domain.model.User
@@ -47,6 +49,12 @@ class UserRepository(private val remoteDataSource: UsersRemoteDataSource) :
 
     override suspend fun uploadImage(filePart: MultipartBody.Part): Boolean {
         val response = remoteDataSource.uploadImage(filePart)
+        return response["success"] != null
+    }
+
+    override suspend fun changePassword(oldPassword: String, password: String): Boolean {
+        Log.d(ContentValues.TAG, "Attempting to change password for useraaaaaaaaa repo.")
+        val response = remoteDataSource.changePassword(oldPassword, password)
         return response["success"] != null
     }
 }

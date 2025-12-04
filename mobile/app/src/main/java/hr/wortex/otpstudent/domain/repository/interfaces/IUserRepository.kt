@@ -8,4 +8,5 @@ interface IUserRepository {
     suspend fun uploadCv(filePart: MultipartBody.Part): Boolean
     suspend fun updateUser(user: User): Boolean
     suspend fun uploadImage(filePart: MultipartBody.Part): Boolean
+    suspend fun changePassword(oldPassword: String, password: String): Boolean
 }
