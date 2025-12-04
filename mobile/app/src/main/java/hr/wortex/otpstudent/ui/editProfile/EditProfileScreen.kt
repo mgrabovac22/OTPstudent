@@ -326,18 +326,16 @@ fun EditProfileContent(
             fontSize = 16.sp,
             modifier = Modifier
                 .padding(top = Dimens.PaddingLarge)
-                .clickable { showChangePasswordDialog = true }
+                .clickable { viewModel.showPasswordDialog() }
         )
 
         Spacer(Modifier.height(32.dp))
     }
 
-    if (showChangePasswordDialog) {
+    if (state.isChangePasswordModalVisible) {
         ChangePasswordDialog(
-            onDismiss = { showChangePasswordDialog = false },
-            onConfirm = { oldPass, newPass, confirmPass ->
-                showChangePasswordDialog = false
-            }
+            viewModel = viewModel,
+            onDismiss = { viewModel.hidePasswordDialog() }
         )
     }
 }
