@@ -8,6 +8,7 @@ import hr.wortex.otpstudent.data.remote.dto.ChangePasswordDto
 import hr.wortex.otpstudent.data.remote.dto.UpdateUserDto
 import hr.wortex.otpstudent.data.remote.dto.UserDto
 import okhttp3.MultipartBody
+import retrofit2.Response
 
 class UsersRemoteDataSource(
     private val api: IOtpApiService
@@ -28,7 +29,7 @@ class UsersRemoteDataSource(
         return api.uploadImage(filePart)
     }
 
-    override suspend fun changePassword(oldPassword: String, password: String): Map<String, String> {
+    override suspend fun changePassword(oldPassword: String, password: String): Response<Map<String, String>> {
         Log.d(TAG, "Attempting to change password for user.")
         return api.changePassword(ChangePasswordDto(oldPassword, password))
     }
