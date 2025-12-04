@@ -207,6 +207,10 @@ class EditProfileViewModel(
         }
     }
 
+    private fun isPasswordValid(pw: String): Boolean {
+        return pw.length in 8..64
+    }
+
     fun uploadImage(inputStream: InputStream, fileName: String, mimeType: String) {
         viewModelScope.launch {
 
@@ -387,6 +391,31 @@ class EditProfileViewModel(
 
     fun confirmPasswordChange() {
         viewModelScope.launch {
+            val state = _uiState.value
+            var hasError = false
+
+            if (state.oldPasswordInput.isBlank()) {
+                _uiState.update { it.copy(oldPasswordError = "Unesi staru lozinku.") }
+                hasError = true
+            }
+
+            if (!isPasswordValid(state.newPasswordInput)) {
+                _uiState.update {
+                    it.copy(newPasswordError = "Lozinka mora biti između 8 i 64 znaka.")
+                }
+                hasError = true
+            }
+
+            if (state.newPasswordInput != state.newPasswordConfirmInput) {
+                _uiState.update {
+                    it.copy(newPasswordConfirmError = "Lozinke se ne podudaraju.")
+                }
+                hasError = true
+            }
+
+            if (hasError) {
+                return@launch
+            }
 
             _uiState.update {
                 it.copy(
@@ -397,8 +426,6 @@ class EditProfileViewModel(
                     newPasswordConfirmError = null
                 )
             }
-
-            val state = _uiState.value
 
             if (state.newPasswordInput != state.newPasswordConfirmInput) {
                 _uiState.update {
