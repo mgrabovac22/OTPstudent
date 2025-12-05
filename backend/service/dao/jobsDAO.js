@@ -11,7 +11,8 @@ class JobDAO {
                 sj.id,
                 sj.name,
                 sj.startDate,
-                l.address AS location
+                l.address AS location,
+                l.city
             FROM Student_Job sj
             JOIN Location l ON sj.Location_id = l.id
             ORDER BY sj.startDate ASC
@@ -27,7 +28,8 @@ class JobDAO {
                 sj.description,
                 sj.startDate,
                 l.id AS locationId,
-                l.address AS location
+                l.address AS location,
+                l.city
             FROM Student_Job sj
             JOIN Location l ON sj.Location_id = l.id
             WHERE sj.id = ?
@@ -53,6 +55,25 @@ class JobDAO {
             "DELETE FROM Student_Job WHERE id = ?",
             [jobId]
         );
+    }
+
+    async applyToJob(userId, jobId, applicationDate) {
+        const sql = `
+            INSERT INTO Job_Application (User_id, Student_Job_id, applicationDate)
+            VALUES (?, ?, ?)
+        `;
+        return await this.db.executeQuery(sql, [userId, jobId, applicationDate]);
+    }
+
+    async getApplicationsByUser(userId) {
+        const sql = `
+            SELECT ja.Student_Job_id, ja.applicationDate, sj.name, sj.description
+            FROM Job_Application ja
+            JOIN Student_Job sj ON ja.Student_Job_id = sj.id
+            WHERE ja.User_id = ?
+            ORDER BY ja.applicationDate DESC
+        `;
+        return await this.db.executeQuery(sql, [userId]);
     }
 }
 
