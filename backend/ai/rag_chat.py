@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 import os
+import sys
+import json
 from os.path import join
 
 from langchain_core.prompts import ChatPromptTemplate
@@ -35,6 +37,7 @@ general_prompt = ChatPromptTemplate.from_messages([
      Za svoje odgovore smiješ koristiti isključivo dane podatke: {data}\n
      Ukoliko to nije moguće, nemoj izmišljati činjenice nego daj korisniku do
      znanja da nisi u mogućnosti dati odgovor na pitanje.
+     Odgovaraj što sažetije.
      '''),
     ("human",
      '''
@@ -49,6 +52,7 @@ cv_prompt = ChatPromptTemplate.from_messages([
      Ti si stručnjak za analizu životopisa.\n
      Ovo je CV kandidata:\n{cv_text}\n\n
      Ako je dan opis posla, prilagodi savjet tomu:\n{job_description}
+     Odgovaraj što sažetije.
      '''),
     ("human",
      '''
@@ -57,21 +61,47 @@ cv_prompt = ChatPromptTemplate.from_messages([
      ''')
 ])
 
-def main():
-    history = "Korisnik: Bok, zanima me više o vašoj firmi.\nAsistent: Naravno, postavi pitanje."
-    question = "Reci mi nešto o OTP banci"
-    
-    docs = retriever.invoke(question)
-    data = "\n\n".join(d.page_content for d in docs)
+def format_history(history):
+    return "\n".join(f"{m['role']}: {m['content']}" for m in history)
 
-    messages = general_prompt.format_messages(
+def handle_general(message, history):
+    history_str = format_history(history)
+    docs = retriever.invoke(message)
+    data = "\n\n".join(d.page_content for d in docs)
+    msgs = general_prompt.format_messages(
         data=data,
-        history=history,
-        question=question
+        history=history_str,
+        question=message
     )
-    
-    response = llm.invoke(messages)
-    print(response.content)
+    resp = llm.invoke(msgs)
+    return resp.content
+
+def handle_cv(message, history, cv_text, job_description):
+    history_str = format_history(history)
+    msgs = cv_prompt.format_messages(
+        cv_text=cv_text or "",
+        job_description=job_description or "",
+        history=history_str,
+        question=message
+    )
+    resp = llm.invoke(msgs)
+    return resp.content
+
+def main():
+    raw = sys.stdin.read()
+    data = json.loads(raw)
+    mode = data.get("mode", "general")
+    message = data["message"]
+    history = data.get("history", [])
+    if mode == "cv":
+        cv_text = data.get("cv_text")
+        job_description = data.get("job_description")
+        answer = handle_cv(message, history, cv_text, job_description)
+    else:
+        answer = handle_general(message, history)
+    out = {"answer": answer, "mode": mode}
+    sys.stdout.write(json.dumps(out))
+    sys.stdout.flush()
     
 if __name__ == "__main__":
     main()
