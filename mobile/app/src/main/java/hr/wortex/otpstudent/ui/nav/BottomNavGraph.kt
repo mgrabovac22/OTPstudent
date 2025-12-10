@@ -1,9 +1,9 @@
 package hr.wortex.otpstudent.ui.nav
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -25,10 +25,15 @@ import hr.wortex.otpstudent.ui.internship.InternshipJobsScreen
 import hr.wortex.otpstudent.ui.internship.InternshipUserDataScreen
 import hr.wortex.otpstudent.ui.login.LoginScreen
 import hr.wortex.otpstudent.ui.career.CareerScreen
+import hr.wortex.otpstudent.ui.career.StudentJobsScreen
 import hr.wortex.otpstudent.ui.profil.ProfileScreen
 import hr.wortex.otpstudent.ui.registration.RegistrationScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import hr.wortex.otpstudent.domain.usecase.HasStudentAppliedToJob
+import hr.wortex.otpstudent.ui.career.StudentJobDetailsScreen
+import hr.wortex.otpstudent.ui.career.StudentJobDetailsViewModel
+import hr.wortex.otpstudent.ui.career.StudentJobDetailsViewModelFactory
 import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoContentScreen
 import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoDetailScreen
 import hr.wortex.otpstudent.ui.unlock.UnlockScreen
@@ -38,7 +43,10 @@ fun MainNavGraph(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBottomBar = currentRoute != "login_screen" && currentRoute != "unlock_screen" && currentRoute != "registration_screen"
+    val showBottomBar =
+        currentRoute != "login_screen" &&
+                currentRoute != "unlock_screen" &&
+                currentRoute != "registration_screen"
 
     Scaffold(
         bottomBar = {
@@ -55,6 +63,36 @@ fun MainNavGraph(navController: NavHostController) {
             composable("business_screen") {
                 CareerScreen(navController = navController)
             }
+
+            composable("student_jobs_screen") {
+                StudentJobsScreen(
+                    navController = navController,
+                    paddingValues = innerPadding
+                )
+            }
+
+            composable(
+                route = "job_detail/{jobId}",
+                arguments = listOf(navArgument("jobId") { type = NavType.IntType })
+            ) { backStackEntry ->
+
+                val jobId = backStackEntry.arguments?.getInt("jobId") ?: 0
+
+                val viewModel: StudentJobDetailsViewModel = viewModel(
+                    factory = StudentJobDetailsViewModelFactory(
+                        jobId = jobId,
+                        getStudentJobDetails = DependencyProvider.getStudentJobDetailsUseCase,
+                        applyToStudentJob = DependencyProvider.applyToStudentJobUseCase,
+                        hasStudentAppliedToJob = HasStudentAppliedToJob(DependencyProvider.studentJobRepository)
+                    )
+                )
+
+                StudentJobDetailsScreen(
+                    navController = navController,
+                    viewModel = viewModel
+                )
+            }
+
             composable("home_screen") {
                 HomeScreen(
                     paddingValues = innerPadding,
@@ -65,18 +103,27 @@ fun MainNavGraph(navController: NavHostController) {
             }
 
             composable("profile_screen") {
-                ProfileScreen(onEditProfile = {
-                    navController.navigate("edit_profile_screen")
-                })
+                ProfileScreen(
+                    onEditProfile = {
+                        navController.navigate("edit_profile_screen")
+                    }
+                )
             }
+
             composable("login_screen") {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LoginScreen(paddingValues = innerPadding, navController = navController)
+                Scaffold(modifier = Modifier.fillMaxSize()) { inner ->
+                    LoginScreen(
+                        paddingValues = inner,
+                        navController = navController
+                    )
                 }
             }
 
             composable("registration_screen") {
-                RegistrationScreen(paddingValues = innerPadding, navController = navController)
+                RegistrationScreen(
+                    paddingValues = innerPadding,
+                    navController = navController
+                )
             }
 
             composable("edit_profile_screen") {
@@ -91,7 +138,10 @@ fun MainNavGraph(navController: NavHostController) {
             }
 
             composable("reward_screen") {
-                InfoContentScreen(paddingValues = innerPadding, navController = navController)
+                InfoContentScreen(
+                    paddingValues = innerPadding,
+                    navController = navController
+                )
             }
 
             composable(
@@ -100,7 +150,10 @@ fun MainNavGraph(navController: NavHostController) {
             ) { backStackEntry ->
                 val contentId = backStackEntry.arguments?.getInt("contentId") ?: 0
 
-                InfoDetailScreen(contentId = contentId, navController = navController)
+                InfoDetailScreen(
+                    contentId = contentId,
+                    navController = navController
+                )
             }
 
             internshipApplicationGraph(navController)
@@ -109,12 +162,16 @@ fun MainNavGraph(navController: NavHostController) {
 }
 
 fun NavGraphBuilder.internshipApplicationGraph(navController: NavHostController) {
-    navigation(startDestination = "internship_intro_screen", route = "internship_application_graph") {
+    navigation(
+        startDestination = "internship_intro_screen",
+        route = "internship_application_graph"
+    ) {
         composable("internship_intro_screen") {
             InternshipIntroScreen(navController)
         }
         composable("internship_user_data_screen") {
-            val backStackEntry = remember(it) { navController.getBackStackEntry("internship_application_graph") }
+            val backStackEntry =
+                remember(it) { navController.getBackStackEntry("internship_application_graph") }
             val viewModel: InternshipApplicationViewModel = viewModel(
                 viewModelStoreOwner = backStackEntry,
                 factory = DependencyProvider.internshipApplicationViewModelFactory
@@ -122,7 +179,8 @@ fun NavGraphBuilder.internshipApplicationGraph(navController: NavHostController)
             InternshipUserDataScreen(navController, viewModel)
         }
         composable("internship_jobs_screen") {
-            val backStackEntry = remember(it) { navController.getBackStackEntry("internship_application_graph") }
+            val backStackEntry =
+                remember(it) { navController.getBackStackEntry("internship_application_graph") }
             val viewModel: InternshipApplicationViewModel = viewModel(
                 viewModelStoreOwner = backStackEntry,
                 factory = DependencyProvider.internshipApplicationViewModelFactory
@@ -130,7 +188,8 @@ fun NavGraphBuilder.internshipApplicationGraph(navController: NavHostController)
             InternshipJobsScreen(navController, viewModel)
         }
         composable("internship_details_screen") {
-            val backStackEntry = remember(it) { navController.getBackStackEntry("internship_application_graph") }
+            val backStackEntry =
+                remember(it) { navController.getBackStackEntry("internship_application_graph") }
             val viewModel: InternshipApplicationViewModel = viewModel(
                 viewModelStoreOwner = backStackEntry,
                 factory = DependencyProvider.internshipApplicationViewModelFactory

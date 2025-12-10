@@ -14,6 +14,10 @@ import hr.wortex.otpstudent.data.remote.dto.UserDto
 import okhttp3.MultipartBody
 import hr.wortex.otpstudent.data.remote.dto.InfoDTO
 import hr.wortex.otpstudent.data.remote.dto.MarkReadDTO
+import hr.wortex.otpstudent.data.remote.dto.StudentJobApplicationDto
+import hr.wortex.otpstudent.data.remote.dto.StudentJobApplicationRequestDto
+import hr.wortex.otpstudent.data.remote.dto.StudentJobDetailDto
+import hr.wortex.otpstudent.data.remote.dto.StudentJobDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -89,4 +93,24 @@ interface IOtpApiService {
         @Body body: ChangePasswordDto
     ): Response<Map<String, String>>
 
+    @GET("api/jobs")
+    suspend fun getStudentJobs(): List<StudentJobDto>
+
+    @GET("api/jobs/{id}")
+    suspend fun getStudentJobDetails(
+        @Path("id") id: Int
+    ): StudentJobDetailDto
+
+    @POST("api/jobs/apply")
+    suspend fun applyToStudentJob(
+        @Body request: StudentJobApplicationRequestDto
+    ): Response<Unit>
+
+    /*@POST("api/jobs/apply")
+    suspend fun applyToStudentJob(
+        @Body body: Map<String, Int>
+    ): Response<Unit>*/
+
+    @GET("api/jobs/applications")
+    suspend fun getStudentJobApplications(): List<StudentJobApplicationDto>
 }

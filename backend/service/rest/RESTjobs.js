@@ -15,17 +15,27 @@ class RESTjobs {
             if (!userRows || !userRows[0]) {
                 return res.status(404).json({ error: "User not found" });
             }
+
             const userId = userRows[0].id;
             const { jobId } = req.body;
             const applicationDate = new Date().toISOString().slice(0, 10);
+
             if (!jobId) {
                 return res.status(400).json({ error: "Missing jobId" });
             }
+
             await this.jobDAO.applyToJob(userId, jobId, applicationDate);
-            res.status(201).json({ success: "Job application submitted" });
+            return res.status(201).json({ success: "Job application submitted" });
         } catch (err) {
             console.error("Error applying to job:", err);
-            res.status(500).json({ error: "Internal server error" });
+
+            if (err.code === "ER_DUP_ENTRY") {
+                return res.status(409).json({
+                    error: "Već ste prijavljeni na ovaj posao."
+                });
+            }
+
+            return res.status(500).json({ error: "Internal server error" });
         }
     }
 
@@ -62,7 +72,9 @@ class RESTjobs {
         res.type("application/json");
 
         try {
+            console.log("Raw id param:", req.params.id, "URL:", req.originalUrl);
             const id = parseInt(req.params.id, 10);
+            console.log("Fetching details for job ID:", id);
             if (isNaN(id)) {
                 return res.status(400).json({ error: "Invalid job ID" });
             }

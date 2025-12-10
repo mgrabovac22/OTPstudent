@@ -158,8 +158,8 @@ server.get("/api/internship/jobs", restInternship.listJobs.bind(restInternship))
 server.post("/api/internship/apply", restInternship.apply.bind(restInternship));
 
 server.get("/api/jobs", restJobs.listJobs.bind(restJobs));
-server.get("/api/jobs/:id", restJobs.getJobDetails.bind(restJobs));
 server.get("/api/jobs/applications", restJobs.getUserApplications.bind(restJobs));
+server.get("/api/jobs/:id", restJobs.getJobDetails.bind(restJobs));
 server.post("/api/jobs/apply", restJobs.applyToJob.bind(restJobs));
 
 server.get(/(.*)/, (req, res) => {
