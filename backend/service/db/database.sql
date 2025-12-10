@@ -413,10 +413,11 @@ INSERT INTO `Student_Internship_Job` (`id`, `name`) VALUES
 (7, 'Korisnička podrška');
 
 -- Location (Lokacije poslova)
-INSERT INTO `Location` (`id`, `address`) VALUES
-(101, 'Ulica kneza Branimira 29, Zagreb'),
-(102, 'Riječka ulica 44, Rijeka'),
-(103, 'Trg slobode 1, Osijek');
+INSERT INTO `Location` (`id`, `address`, `city`) VALUES
+(101, 'Ulica kneza Branimira 29, Zagreb', 'Zagreb'),
+(102, 'Riječka ulica 44, Rijeka', 'Rijeka'),
+(103, 'Trg slobode 1, Osijek', 'Osijek'),
+(104, 'Ulica Ivana Gundulića 36, Split', 'Split');
 
 -- Student_Job (Trenutne ponude za studentske poslove/prakse)
 INSERT INTO `Student_Job` (`id`, `name`, `description`, `startDate`, `Location_id`) VALUES
