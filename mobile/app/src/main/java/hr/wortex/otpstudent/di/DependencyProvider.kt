@@ -37,7 +37,7 @@ object DependencyProvider {
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://10.0.2.2:8000/")
+            .baseUrl("https://otpstudent.onrender.com/")
             .client(OkHttpClient.Builder().build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -57,7 +57,7 @@ object DependencyProvider {
 
     private val retrofitWithInterceptor: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://10.0.2.2:8000/")
+            .baseUrl("https://otpstudent.onrender.com/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
