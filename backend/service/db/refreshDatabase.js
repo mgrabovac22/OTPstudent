@@ -6,10 +6,13 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../resources/.env")
 
 async function refreshDatabase() {
     try {
+
         const connection = await mysql2.createConnection({
             host: process.env.DB_HOST,
+            port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
             user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD
+            password: process.env.DB_PASSWORD,
+            ssl: process.env.DB_SSL === 'true' || process.env.DB_SSL === 'REQUIRED' ? { rejectUnauthorized: false } : undefined
         });
 
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\`;`);
@@ -17,9 +20,11 @@ async function refreshDatabase() {
 
         const db = await mysql2.createConnection({
             host: process.env.DB_HOST,
+            port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME
+            database: process.env.DB_NAME,
+            ssl: process.env.DB_SSL === 'true' || process.env.DB_SSL === 'REQUIRED' ? { rejectUnauthorized: false } : undefined
         });
 
         const sqlFile = path.resolve(__dirname, "./database.sql");

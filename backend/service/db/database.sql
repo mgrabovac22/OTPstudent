@@ -74,6 +74,7 @@ DROP TABLE IF EXISTS `Location` ;
 CREATE TABLE IF NOT EXISTS `Location` (
   `id` INT NOT NULL,
   `address` VARCHAR(200) NULL,
+  `city` VARCHAR(100) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
