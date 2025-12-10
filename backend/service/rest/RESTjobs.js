@@ -1,9 +1,9 @@
 const JobDAO = require("../dao/jobsDAO.js");
+const UserDAO = require("../dao/userDAO.js");
 
 class RESTjobs {
     constructor() {
         this.jobDAO = new JobDAO();
-        const UserDAO = require("../dao/userDAO.js");
         this.userDAO = new UserDAO();
     }
 
