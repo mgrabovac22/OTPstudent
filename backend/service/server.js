@@ -15,6 +15,7 @@ const RESTInstitution = require("./rest/RESTInstitution.js");
 const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
 const RestUserRead = require("./rest/RESTuserRead.js");
 const RESTinternship = require("./rest/RESTinternship.js");
+const RESTchatbot = require("./rest/RESTchatbot.js")
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
@@ -52,6 +53,10 @@ const restInformationalContent = new RESTinformationalContent();
 const restUser = new RESTuser();
 const restInstitution = new RESTInstitution();
 const restUserRead = new RestUserRead();
+
+const restChatbot = new RESTchatbot()
+
+server.post("/api/chat", restChatbot.post.bind(restChatbot))
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));

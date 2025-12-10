@@ -3,3 +3,9 @@
 node_modules
 
 package-lock.json
+
+ai/data/knowledge_base
+
+ai/data/vector_store
+
+ai/rag
