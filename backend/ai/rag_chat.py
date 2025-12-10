@@ -51,7 +51,6 @@ cv_prompt = ChatPromptTemplate.from_messages([
      '''
      Ti si stručnjak za analizu životopisa.\n
      Ovo je CV kandidata:\n{cv_text}\n\n
-     Ako je dan opis posla, prilagodi savjet tomu:\n{job_description}
      Odgovaraj što sažetije.
      '''),
     ("human",
@@ -76,11 +75,10 @@ def handle_general(message, history):
     resp = llm.invoke(msgs)
     return resp.content
 
-def handle_cv(message, history, cv_text, job_description):
+def handle_cv(message, history, cv_text):
     history_str = format_history(history)
     msgs = cv_prompt.format_messages(
         cv_text=cv_text or "",
-        job_description=job_description or "",
         history=history_str,
         question=message
     )
@@ -95,8 +93,7 @@ def main():
     history = data.get("history", [])
     if mode == "cv":
         cv_text = data.get("cv_text")
-        job_description = data.get("job_description")
-        answer = handle_cv(message, history, cv_text, job_description)
+        answer = handle_cv(message, history, cv_text)
     else:
         answer = handle_general(message, history)
     out = {"answer": answer, "mode": mode}
