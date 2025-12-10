@@ -3,7 +3,7 @@ const session = require("express-session");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const jwt = require("jsonwebtoken");
-const https = require("node:https");
+const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const cors = require("cors");
@@ -22,13 +22,7 @@ require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 const server = express();
 const port = process.env.PORT || 3000;
 
-const privateKey = fs.readFileSync(path.join(__dirname, "../certificates/private.key"), "utf8");
-const certificate = fs.readFileSync(path.join(__dirname, "../certificates/certificate.crt"), "utf8");
-const ca = fs.readFileSync(path.join(__dirname, "../certificates/ca.key"), "utf8");
-
-const credentials = { key: privateKey, cert: certificate, ca: ca };
-
-server.use(cors({ origin: "https://localhost", methods: ["GET", "POST", "PUT"] }));
+server.use(cors({ origin: true, methods: ["GET", "POST", "PUT"] }));
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(helmet());
@@ -175,7 +169,7 @@ server.get(/(.*)/, (req, res) => {
     `);
 });
 
-https.createServer(credentials, server).listen(port, () => {
-    logger.info(`Server started at: https://localhost:${port}`);
-    console.log(`Server started at: https://localhost:${port}`);
+server.listen(port, '0.0.0.0', () => {
+    logger.info(`Server started at: http://0.0.0.0:${port}`);
+    console.log(`Server started at: http://0.0.0.0:${port}`);
 });
