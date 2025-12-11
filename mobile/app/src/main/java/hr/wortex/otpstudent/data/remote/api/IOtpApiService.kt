@@ -106,10 +106,10 @@ interface IOtpApiService {
         @Body request: StudentJobApplicationRequestDto
     ): Response<Unit>
 
-    /*@POST("api/jobs/apply")
-    suspend fun applyToStudentJob(
-        @Body body: Map<String, Int>
-    ): Response<Unit>*/
+    @POST("api/jobs/unapply")
+    suspend fun unapplyFromStudentJob(
+        @Body request: StudentJobApplicationRequestDto
+    ): Response<Unit>
 
     @GET("api/jobs/applications")
     suspend fun getStudentJobApplications(): List<StudentJobApplicationDto>

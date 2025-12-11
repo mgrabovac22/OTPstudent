@@ -7,6 +7,7 @@ import hr.wortex.otpstudent.domain.model.StudentJobDetail
 import hr.wortex.otpstudent.domain.usecase.ApplyToStudentJob
 import hr.wortex.otpstudent.domain.usecase.GetStudentJobDetails
 import hr.wortex.otpstudent.domain.usecase.HasStudentAppliedToJob
+import hr.wortex.otpstudent.domain.usecase.UnapplyFromStudentJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,6 +26,7 @@ class StudentJobDetailsViewModel(
     private val jobId: Int,
     private val getStudentJobDetails: GetStudentJobDetails,
     private val applyToStudentJob: ApplyToStudentJob,
+    private val unapplyFromStudentJob: UnapplyFromStudentJob,
     private val hasStudentAppliedToJob: HasStudentAppliedToJob
 ) : ViewModel() {
 
@@ -64,10 +66,11 @@ class StudentJobDetailsViewModel(
         }
     }
 
-    fun apply() {
+    fun toggleApplication() {
         val currentState = _uiState.value
         val currentJob = currentState.job ?: return
-        if (currentState.isApplied) return
+
+        if (currentState.isApplying) return
 
         viewModelScope.launch {
             _uiState.update {
@@ -77,12 +80,19 @@ class StudentJobDetailsViewModel(
                 )
             }
             try {
-                val success = applyToStudentJob(currentJob.id)
+                val wasApplied = currentState.isApplied
+
+                val success = if (wasApplied) {
+                    unapplyFromStudentJob(currentJob.id)
+                } else {
+                    applyToStudentJob(currentJob.id)
+                }
+
                 _uiState.update {
                     it.copy(
                         isApplying = false,
                         applySuccess = success,
-                        isApplied = if (success) true else it.isApplied
+                        isApplied = if (success) !wasApplied else wasApplied
                     )
                 }
             } catch (e: Exception) {
@@ -90,7 +100,7 @@ class StudentJobDetailsViewModel(
                     it.copy(
                         isApplying = false,
                         applySuccess = false,
-                        error = e.message ?: "Prijava nije uspjela."
+                        error = e.message ?: "Akcija nije uspjela."
                     )
                 }
             }
@@ -102,8 +112,10 @@ class StudentJobDetailsViewModelFactory(
     private val jobId: Int,
     private val getStudentJobDetails: GetStudentJobDetails,
     private val applyToStudentJob: ApplyToStudentJob,
+    private val unapplyFromStudentJob: UnapplyFromStudentJob,
     private val hasStudentAppliedToJob: HasStudentAppliedToJob
 ) : ViewModelProvider.Factory {
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StudentJobDetailsViewModel::class.java)) {
@@ -111,6 +123,7 @@ class StudentJobDetailsViewModelFactory(
                 jobId = jobId,
                 getStudentJobDetails = getStudentJobDetails,
                 applyToStudentJob = applyToStudentJob,
+                unapplyFromStudentJob = unapplyFromStudentJob,
                 hasStudentAppliedToJob = hasStudentAppliedToJob
             ) as T
         }

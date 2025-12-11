@@ -83,6 +83,7 @@ fun MainNavGraph(navController: NavHostController) {
                         jobId = jobId,
                         getStudentJobDetails = DependencyProvider.getStudentJobDetailsUseCase,
                         applyToStudentJob = DependencyProvider.applyToStudentJobUseCase,
+                        unapplyFromStudentJob = DependencyProvider.unapplyFromStudentJobUseCase,
                         hasStudentAppliedToJob = HasStudentAppliedToJob(DependencyProvider.studentJobRepository)
                     )
                 )

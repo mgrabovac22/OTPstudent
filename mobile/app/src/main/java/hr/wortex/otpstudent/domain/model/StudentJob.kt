@@ -5,5 +5,6 @@ data class StudentJob(
     val name: String,
     val startDate: String,
     val location: String,
-    val city: String
+    val city: String,
+    val isApplied: Boolean = false
 )

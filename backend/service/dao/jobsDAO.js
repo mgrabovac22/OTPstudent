@@ -65,6 +65,14 @@ class JobDAO {
         return await this.db.executeQuery(sql, [userId, jobId, applicationDate]);
     }
 
+    async unapplyFromJob(userId, jobId) {
+        const sql = `
+            DELETE FROM Job_Application
+            WHERE User_id = ? AND Student_Job_id = ?
+        `;
+        return await this.db.executeQuery(sql, [userId, jobId]);
+    }
+
     async getApplicationsByUser(userId) {
         const sql = `
             SELECT ja.Student_Job_id, ja.applicationDate, sj.name, sj.description

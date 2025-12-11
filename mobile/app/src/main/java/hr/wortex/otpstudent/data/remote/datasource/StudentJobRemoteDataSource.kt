@@ -26,6 +26,13 @@ class StudentJobRemoteDataSource(
         return response.isSuccessful || response.code() == 409
     }
 
+    override suspend fun unapplyFromJob(jobId: Int): Boolean {
+        val request = StudentJobApplicationRequestDto(studentJobId = jobId)
+        val response = api.unapplyFromStudentJob(request)
+
+        return response.isSuccessful || response.code() == 404
+    }
+
     override suspend fun getApplicationsForCurrentUser(): List<StudentJobApplicationDto> {
         return api.getStudentJobApplications()
     }

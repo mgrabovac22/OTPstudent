@@ -10,13 +10,19 @@ class StudentJobRepository(
 ) : IStudentJobRepository {
 
     override suspend fun getStudentJobs(): List<StudentJob> {
-        return remoteDataSource.getStudentJobs().map {
+        val jobs = remoteDataSource.getStudentJobs()
+
+        val applications = remoteDataSource.getApplicationsForCurrentUser()
+        val appliedIds = applications.map { it.studentJobId }.toSet()
+
+        return jobs.map { dto ->
             StudentJob(
-                id = it.id,
-                name = it.name,
-                startDate = it.startDate,
-                location = it.location,
-                city = it.city
+                id = dto.id,
+                name = dto.name,
+                startDate = dto.startDate,
+                location = dto.location,
+                city = dto.city,
+                isApplied = appliedIds.contains(dto.id)
             )
         }
     }
@@ -36,6 +42,10 @@ class StudentJobRepository(
 
     override suspend fun applyToJob(jobId: Int): Boolean {
         return remoteDataSource.applyToJob(jobId)
+    }
+
+    override suspend fun unapplyFromJob(jobId: Int): Boolean {
+        return remoteDataSource.unapplyFromJob(jobId)
     }
 
     override suspend fun hasAppliedToJob(jobId: Int): Boolean {

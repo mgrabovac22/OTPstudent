@@ -9,6 +9,13 @@ class ApplyToStudentJob(
         repository.applyToJob(jobId)
 }
 
+class UnapplyFromStudentJob(
+    private val repository: IStudentJobRepository
+) {
+    suspend operator fun invoke(jobId: Int): Boolean =
+        repository.unapplyFromJob(jobId)
+}
+
 class HasStudentAppliedToJob(
     private val repository: IStudentJobRepository
 ) {

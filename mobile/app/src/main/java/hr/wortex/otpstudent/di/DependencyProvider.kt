@@ -38,6 +38,7 @@ import hr.wortex.otpstudent.domain.usecase.GetStudentJobs
 import hr.wortex.otpstudent.domain.usecase.GetUser
 import hr.wortex.otpstudent.domain.usecase.HasStudentAppliedToJob
 import hr.wortex.otpstudent.domain.usecase.MarkInfoContentRead
+import hr.wortex.otpstudent.domain.usecase.UnapplyFromStudentJob
 import hr.wortex.otpstudent.ui.career.StudentJobsViewModelFactory
 
 object DependencyProvider {
@@ -112,8 +113,8 @@ object DependencyProvider {
         StudentJobsViewModelFactory(getStudentJobsUseCase)
     }
 
-    val hasStudentAppliedToJobUseCase by lazy { HasStudentAppliedToJob(studentJobRepository) }
     val getStudentJobsUseCase by lazy { GetStudentJobs(studentJobRepository) }
     val getStudentJobDetailsUseCase by lazy { GetStudentJobDetails(studentJobRepository) }
     val applyToStudentJobUseCase by lazy { ApplyToStudentJob(studentJobRepository) }
+    val unapplyFromStudentJobUseCase by lazy { UnapplyFromStudentJob(studentJobRepository) }
 }

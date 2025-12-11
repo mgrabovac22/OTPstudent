@@ -8,5 +8,6 @@ interface IStudentJobRemoteDataSource {
     suspend fun getStudentJobs(): List<StudentJobDto>
     suspend fun getStudentJobDetails(id: Int): StudentJobDetailDto
     suspend fun applyToJob(jobId: Int): Boolean
+    suspend fun unapplyFromJob(jobId: Int): Boolean
     suspend fun getApplicationsForCurrentUser(): List<StudentJobApplicationDto>
 }

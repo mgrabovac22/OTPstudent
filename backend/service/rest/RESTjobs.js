@@ -17,14 +17,15 @@ class RESTjobs {
             }
 
             const userId = userRows[0].id;
-            const { jobId } = req.body;
+            const { jobId, Student_Job_id } = req.body;
+            const resolvedJobId = jobId || Student_Job_id;
             const applicationDate = new Date().toISOString().slice(0, 10);
 
-            if (!jobId) {
-                return res.status(400).json({ error: "Missing jobId" });
+            if (!resolvedJobId) {
+                return res.status(400).json({ error: "Missing jobId (or Student_Job_id)" });
             }
 
-            await this.jobDAO.applyToJob(userId, jobId, applicationDate);
+            await this.jobDAO.applyToJob(userId, resolvedJobId, applicationDate);
             return res.status(201).json({ success: "Job application submitted" });
         } catch (err) {
             console.error("Error applying to job:", err);
@@ -35,6 +36,42 @@ class RESTjobs {
                 });
             }
 
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    }
+
+    async unapplyFromJob(req, res) {
+        res.type("application/json");
+        try {
+            const email = req.user.email;
+            const userRows = await this.userDAO.getUserByEmail(email);
+
+            if (!userRows || !userRows[0]) {
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            const userId = userRows[0].id;
+
+            const { jobId, Student_Job_id } = req.body;
+            const resolvedJobId = jobId || Student_Job_id;
+
+            if (!resolvedJobId) {
+                return res
+                    .status(400)
+                    .json({ error: "Missing jobId (or Student_Job_id)" });
+            }
+
+            const result = await this.jobDAO.unapplyFromJob(userId, resolvedJobId);
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: "Application not found" });
+            }
+
+            return res.status(200).json({
+                success: "Prijava na posao je uspješno otkazana."
+            });  
+        } catch (err) {
+            console.error("Error unappplying from job:", err);
             return res.status(500).json({ error: "Internal server error" });
         }
     }
@@ -72,9 +109,7 @@ class RESTjobs {
         res.type("application/json");
 
         try {
-            console.log("Raw id param:", req.params.id, "URL:", req.originalUrl);
             const id = parseInt(req.params.id, 10);
-            console.log("Fetching details for job ID:", id);
             if (isNaN(id)) {
                 return res.status(400).json({ error: "Invalid job ID" });
             }

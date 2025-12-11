@@ -10,11 +10,17 @@ import hr.wortex.otpstudent.domain.model.StudentJob
 import hr.wortex.otpstudent.domain.usecase.GetStudentJobs
 import kotlinx.coroutines.launch
 
+enum class JobFilterType {
+    APPLIED,
+    ALL,
+    NOT_APPLIED
+}
+
 data class StudentJobsUiState(
     val isLoading: Boolean = false,
     val jobs: List<StudentJob> = emptyList(),
     val error: String? = null,
-    val showOnlyOpen: Boolean = true // za "Otvorene prijave" – za sada samo flag
+    val selectedFilter: JobFilterType = JobFilterType.ALL
 )
 
 class StudentJobsViewModel(
@@ -28,11 +34,6 @@ class StudentJobsViewModel(
         loadJobs()
     }
 
-    fun toggleOpenOnly() {
-        uiState = uiState.copy(showOnlyOpen = !uiState.showOnlyOpen)
-        // Ako kasnije backend doda "open/closed", ovdje se može filtrirati lista
-    }
-
     fun loadJobs() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true, error = null)
@@ -41,7 +42,8 @@ class StudentJobsViewModel(
                 val jobs = getStudentJobs()
                 uiState = uiState.copy(
                     isLoading = false,
-                    jobs = jobs
+                    jobs = jobs,
+                    error = null
                 )
             } catch (e: Exception) {
                 uiState = uiState.copy(
@@ -50,6 +52,10 @@ class StudentJobsViewModel(
                 )
             }
         }
+    }
+
+    fun onFilterSelected(filter: JobFilterType) {
+        uiState = uiState.copy(selectedFilter = filter)
     }
 }
 

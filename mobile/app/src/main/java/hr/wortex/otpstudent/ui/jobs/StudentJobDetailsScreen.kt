@@ -29,6 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -44,33 +46,65 @@ fun StudentJobDetailsScreen(
 
     LaunchedEffect(uiState.applySuccess) {
         when (uiState.applySuccess) {
-            true -> snackbarHostState.showSnackbar("Prijava je uspješno poslana.")
-            false -> snackbarHostState.showSnackbar("Prijava nije uspjela.")
+            true -> snackbarHostState.showSnackbar("Akcija je uspješno izvršena.")
+            false -> snackbarHostState.showSnackbar("Akcija nije uspjela.")
             null -> Unit
         }
     }
 
+    val title = uiState.job?.name ?: ""
+    val location = uiState.job?.city ?: ""
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = uiState.job?.name ?: "Detalji posla",
-                        color = Color.White,
-                        fontSize = 16.sp
-                    )
-                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Natrag",
+                            contentDescription = "",
                             tint = Color.White
                         )
                     }
                 },
+                title = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1B6E2A)),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = title,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(end = 56.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 56.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = location,
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF4CAF50)
+                    containerColor = Color(0xFF1B6E2A)
                 )
             )
         },
@@ -96,17 +130,15 @@ fun StudentJobDetailsScreen(
                         .padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = uiState.error ?: "Greška")
+                    Text(text = uiState.error ?: "")
                 }
             }
 
             uiState.job != null -> {
                 StudentJobDetailsContent(
                     modifier = Modifier.padding(padding),
-                    title = uiState.job!!.name,
-                    location = uiState.job!!.city,
                     description = uiState.job!!.description,
-                    onApplyClick = { viewModel.apply() },
+                    onApplyClick = { viewModel.toggleApplication() },
                     isApplying = uiState.isApplying,
                     isApplied = uiState.isApplied
                 )
@@ -118,8 +150,6 @@ fun StudentJobDetailsScreen(
 @Composable
 private fun StudentJobDetailsContent(
     modifier: Modifier = Modifier,
-    title: String,
-    location: String,
     description: String,
     onApplyClick: () -> Unit,
     isApplying: Boolean,
@@ -130,38 +160,19 @@ private fun StudentJobDetailsContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF66BB6A))
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.LocationOn,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = location, color = Color.White, fontSize = 14.sp)
-        }
-
         Column(
             modifier = Modifier
                 .padding(12.dp)
-                .background(Color(0xFF81C784), shape = RoundedCornerShape(8.dp))
+                .background(Color(0xFF4CAF50), shape = RoundedCornerShape(8.dp))
                 .padding(16.dp)
         ) {
             Text(
-                text = title,
+                text = "Opis posla",
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                fontSize = 16.sp
+                fontSize = 15.sp
             )
             Spacer(modifier = Modifier.height(12.dp))
-
             Text(
                 text = description,
                 color = Color.White,
@@ -171,9 +182,9 @@ private fun StudentJobDetailsContent(
 
         Button(
             onClick = onApplyClick,
-            enabled = !isApplying && !isApplied,
+            enabled = !isApplying,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2E7D32)
+                containerColor = if (isApplied) Color(0xFFD32F2F) else Color(0xFF2E7D32)
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -189,7 +200,7 @@ private fun StudentJobDetailsContent(
                     )
                 }
                 isApplied -> {
-                    Text("PRIJAVLJENI STE", color = Color.White, fontSize = 15.sp)
+                    Text("ODJAVI SE", color = Color.White, fontSize = 15.sp)
                 }
                 else -> {
                     Text("PRIJAVI SE", color = Color.White, fontSize = 15.sp)
@@ -197,4 +208,15 @@ private fun StudentJobDetailsContent(
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun StudentJobDetailsPreview() {
+    StudentJobDetailsContent(
+        description = "Tražimo studenta za rad na razvoju nove mobilne aplikacije. Poželjno poznavanje Kotlina.",
+        onApplyClick = {},
+        isApplying = false,
+        isApplied = false
+    )
 }
