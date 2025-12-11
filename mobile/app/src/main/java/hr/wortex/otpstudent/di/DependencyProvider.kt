@@ -17,10 +17,15 @@ import hr.wortex.otpstudent.domain.usecase.GetInstitutions
 import hr.wortex.otpstudent.domain.usecase.Login
 import hr.wortex.otpstudent.domain.usecase.Register
 import hr.wortex.otpstudent.data.remote.datasource.InternshipRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.StudentJobRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.interfaces.IInternshipRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.interfaces.IStudentJobRemoteDataSource
 import hr.wortex.otpstudent.domain.repository.InternshipRepository
+import hr.wortex.otpstudent.domain.repository.StudentJobRepository
 import hr.wortex.otpstudent.domain.repository.interfaces.IInternshipRepository
+import hr.wortex.otpstudent.domain.repository.interfaces.IStudentJobRepository
 import hr.wortex.otpstudent.domain.usecase.ApplyToInternship
+import hr.wortex.otpstudent.domain.usecase.ApplyToStudentJob
 import hr.wortex.otpstudent.domain.usecase.GetJobs
 import hr.wortex.otpstudent.ui.internship.InternshipApplicationViewModelFactory
 import hr.wortex.otpstudent.ui.unlock.UnlockViewModelFactory
@@ -28,8 +33,13 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import hr.wortex.otpstudent.domain.usecase.GetInfoContentDetail
+import hr.wortex.otpstudent.domain.usecase.GetStudentJobDetails
+import hr.wortex.otpstudent.domain.usecase.GetStudentJobs
 import hr.wortex.otpstudent.domain.usecase.GetUser
+import hr.wortex.otpstudent.domain.usecase.HasStudentAppliedToJob
 import hr.wortex.otpstudent.domain.usecase.MarkInfoContentRead
+import hr.wortex.otpstudent.domain.usecase.UnapplyFromStudentJob
+import hr.wortex.otpstudent.ui.career.StudentJobsViewModelFactory
 
 object DependencyProvider {
 
@@ -90,4 +100,21 @@ object DependencyProvider {
     val internshipApplicationViewModelFactory by lazy {
         InternshipApplicationViewModelFactory(userRepository, internshipRepository, applyToInternship)
     }
+
+    private val studentJobRemoteDataSource: IStudentJobRemoteDataSource by lazy {
+        StudentJobRemoteDataSource(apiServiceWithInterceptor)
+    }
+
+    val studentJobRepository: IStudentJobRepository by lazy {
+        StudentJobRepository(studentJobRemoteDataSource)
+    }
+
+    val studentJobsViewModelFactory by lazy {
+        StudentJobsViewModelFactory(getStudentJobsUseCase)
+    }
+
+    val getStudentJobsUseCase by lazy { GetStudentJobs(studentJobRepository) }
+    val getStudentJobDetailsUseCase by lazy { GetStudentJobDetails(studentJobRepository) }
+    val applyToStudentJobUseCase by lazy { ApplyToStudentJob(studentJobRepository) }
+    val unapplyFromStudentJobUseCase by lazy { UnapplyFromStudentJob(studentJobRepository) }
 }
