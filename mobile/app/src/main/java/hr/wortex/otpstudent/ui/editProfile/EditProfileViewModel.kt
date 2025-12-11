@@ -120,7 +120,7 @@ data class EditProfileState(
     val dateOfBirthError: String? = null,
     val emailError: String? = null,
 
-    val isChangePasswordModalVisible: Boolean = true,
+    val isChangePasswordModalVisible: Boolean = false,
     val oldPasswordInput: String = "",
     val newPasswordInput: String = "",
     val newPasswordConfirmInput: String = "",
