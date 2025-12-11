@@ -1,5 +1,6 @@
 package hr.wortex.otpstudent.di
 
+import androidx.lifecycle.ViewModel
 import hr.wortex.otpstudent.App
 import hr.wortex.otpstudent.data.local.TokenStorage
 import hr.wortex.otpstudent.data.remote.AuthInterceptor
@@ -17,8 +18,11 @@ import hr.wortex.otpstudent.domain.usecase.GetInstitutions
 import hr.wortex.otpstudent.domain.usecase.Login
 import hr.wortex.otpstudent.domain.usecase.Register
 import hr.wortex.otpstudent.data.remote.datasource.InternshipRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.interfaces.IChatRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.interfaces.IInternshipRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.ChatRemoteDataSource
 import hr.wortex.otpstudent.domain.repository.InternshipRepository
+import hr.wortex.otpstudent.domain.repository.interfaces.IChatRepository
 import hr.wortex.otpstudent.domain.repository.interfaces.IInternshipRepository
 import hr.wortex.otpstudent.domain.usecase.ApplyToInternship
 import hr.wortex.otpstudent.domain.usecase.GetJobs
@@ -30,6 +34,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import hr.wortex.otpstudent.domain.usecase.GetInfoContentDetail
 import hr.wortex.otpstudent.domain.usecase.GetUser
 import hr.wortex.otpstudent.domain.usecase.MarkInfoContentRead
+import hr.wortex.otpstudent.domain.repository.ChatRepository
+import hr.wortex.otpstudent.domain.usecase.SendChatMessage
+import hr.wortex.otpstudent.ui.chatbot.ChatbotViewModel
 
 object DependencyProvider {
 
@@ -89,5 +96,30 @@ object DependencyProvider {
     val getUserUseCase by lazy { GetUser(userRepository) }
     val internshipApplicationViewModelFactory by lazy {
         InternshipApplicationViewModelFactory(userRepository, internshipRepository, applyToInternship)
+    }
+
+    private val chatRemoteDataSource: IChatRemoteDataSource by lazy {
+        ChatRemoteDataSource(apiServiceWithInterceptor)
+    }
+
+    val chatRepository: IChatRepository by lazy {
+        ChatRepository(
+            remoteDataSource = chatRemoteDataSource,
+            userRepository = userRepository
+        )
+    }
+
+    val sendChatMessageUseCase by lazy { SendChatMessage(chatRepository) }
+
+    val chatbotViewModelFactory by lazy {
+        object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(ChatbotViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return ChatbotViewModel(sendChatMessageUseCase) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
     }
 }

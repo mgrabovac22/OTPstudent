@@ -29,6 +29,7 @@ import hr.wortex.otpstudent.ui.profil.ProfileScreen
 import hr.wortex.otpstudent.ui.registration.RegistrationScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import hr.wortex.otpstudent.ui.chatbot.ChatbotScreen
 import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoContentScreen
 import hr.wortex.otpstudent.ui.sustav_nagardivanja.informativni_sadrzaj.InfoDetailScreen
 import hr.wortex.otpstudent.ui.unlock.UnlockScreen
@@ -60,6 +61,9 @@ fun MainNavGraph(navController: NavHostController) {
                     paddingValues = innerPadding,
                     onRewardClick = {
                         navController.navigate("reward_screen")
+                    },
+                    onChatClick = {
+                        navController.navigate("chatbot_screen")
                     }
                 )
             }
@@ -104,6 +108,10 @@ fun MainNavGraph(navController: NavHostController) {
             }
 
             internshipApplicationGraph(navController)
+
+            composable("chatbot_screen") {
+                ChatbotScreen()
+            }
         }
     }
 }
