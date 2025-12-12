@@ -3,7 +3,7 @@ const session = require("express-session");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const jwt = require("jsonwebtoken");
-const https = require("node:https");
+const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const cors = require("cors");
@@ -14,20 +14,15 @@ const {uploadCV, uploadImage} = require("./rest/RESTupload.js");
 const RESTInstitution = require("./rest/RESTInstitution.js");
 const RESTinformationalContent = require("./rest/RESTinformationalContent.js");
 const RestUserRead = require("./rest/RESTuserRead.js");
-const RESTinternship = require("./rest/RESTinternship.js");
+const RESTinternship = require("./rest/RESTinternship.js"); 
+const RESTjobs = require("./rest/RESTjobs.js");
 
 require("dotenv").config({ path: path.join(__dirname, "../resources/.env") });
 
 const server = express();
 const port = process.env.PORT || 3000;
 
-const privateKey = fs.readFileSync(path.join(__dirname, "../certificates/private.key"), "utf8");
-const certificate = fs.readFileSync(path.join(__dirname, "../certificates/certificate.crt"), "utf8");
-const ca = fs.readFileSync(path.join(__dirname, "../certificates/ca.key"), "utf8");
-
-const credentials = { key: privateKey, cert: certificate, ca: ca };
-
-server.use(cors({ origin: "https://localhost", methods: ["GET", "POST", "PUT"] }));
+server.use(cors({ origin: true, methods: ["GET", "POST", "PUT"] }));
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(helmet());
@@ -52,6 +47,8 @@ const restInformationalContent = new RESTinformationalContent();
 const restUser = new RESTuser();
 const restInstitution = new RESTInstitution();
 const restUserRead = new RestUserRead();
+const restInternship = new RESTinternship();
+const restJobs = new RESTjobs();
 
 server.post("/api/login", restUser.login.bind(restUser));
 server.post("/api/register", restUser.postUser.bind(restUser));
@@ -151,13 +148,14 @@ server.get("/api/info-content/:id", restInformationalContent.getById.bind(restIn
 
 server.post("/api/info-content/read", restUserRead.markContentRead.bind(restUserRead));
 
-const restInternship = new RESTinternship();
-
 server.get("/api/internship/jobs", restInternship.listJobs.bind(restInternship));
 server.post("/api/internship/apply", restInternship.apply.bind(restInternship));
-server.get("/api/internship/applications", restInternship.listUserApplications.bind(restInternship));
-server.get("/api/internship/applications/:id", restInternship.getApplication.bind(restInternship));
-server.delete("/api/internship/applications/:id", restInternship.deleteApplication.bind(restInternship));
+
+server.get("/api/jobs", restJobs.listJobs.bind(restJobs));
+server.get("/api/jobs/applications", restJobs.getUserApplications.bind(restJobs));
+server.get("/api/jobs/:id", restJobs.getJobDetails.bind(restJobs));
+server.post("/api/jobs/apply", restJobs.applyToJob.bind(restJobs));
+server.post("/api/jobs/unapply", restJobs.unapplyFromJob.bind(restJobs));
 
 server.get(/(.*)/, (req, res) => {
     res.status(200).send(`
@@ -172,7 +170,7 @@ server.get(/(.*)/, (req, res) => {
     `);
 });
 
-https.createServer(credentials, server).listen(port, () => {
-    logger.info(`Server started at: https://localhost:${port}`);
-    console.log(`Server started at: https://localhost:${port}`);
+server.listen(port, '0.0.0.0', () => {
+    logger.info(`Server started at: http://0.0.0.0:${port}`);
+    console.log(`Server started at: http://0.0.0.0:${port}`);
 });
