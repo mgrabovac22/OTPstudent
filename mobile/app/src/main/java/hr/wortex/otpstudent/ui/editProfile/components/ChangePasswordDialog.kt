@@ -1,3 +1,5 @@
+package hr.wortex.otpstudent.ui.editProfile
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,7 +18,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import hr.wortex.otpstudent.ui.profil.ProfileColors
 import hr.wortex.otpstudent.ui.profil.edit.EditProfileViewModel
 
 @Composable
@@ -31,14 +32,22 @@ fun ChangePasswordDialog(
     var showConfirmPassword by remember { mutableStateOf(false) }
 
     val CustomGreen = Color(0xFF1B6E2A)
+    val AppOrange = Color(0xFFf2701b)
+    val White = Color.White
+    val Black = Color.Black
+
     val customTextFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = CustomGreen,
         focusedLabelColor = CustomGreen,
         cursorColor = CustomGreen,
-        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unfocusedBorderColor = CustomGreen,
+        unfocusedLabelColor = CustomGreen,
+
         errorBorderColor = MaterialTheme.colorScheme.error,
-        errorLabelColor = MaterialTheme.colorScheme.error
+        errorLabelColor = MaterialTheme.colorScheme.error,
+
+        focusedTextColor = Black,
+        unfocusedTextColor = Black
     )
 
     if (state.isPasswordChanged) {
@@ -46,6 +55,8 @@ fun ChangePasswordDialog(
             onDismissRequest = onDismiss,
             title = { Text("Lozinka promijenjena", fontWeight = FontWeight.Bold, color = CustomGreen) },
             text = { Text("Vaša lozinka je uspješno promijenjena.") },
+            containerColor = White,
+            textContentColor = Black,
             confirmButton = {
                 TextButton(onClick = onDismiss) {
                     Text("OK", color = CustomGreen)
@@ -57,7 +68,7 @@ fun ChangePasswordDialog(
 
     AlertDialog(
         onDismissRequest = {},
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = White,
         tonalElevation = 6.dp,
         title = { Text("Promijeni lozinku", fontWeight = FontWeight.Bold, color = CustomGreen) },
         text = {
@@ -132,11 +143,11 @@ fun ChangePasswordDialog(
                 onClick = { viewModel.confirmPasswordChange() },
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ProfileColors.ButtonBackground,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = AppOrange,
+                    contentColor = Color.White
                 )
             ) {
-                if (state.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                if (state.isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
                 else Text("Potvrdi")
             }
         },

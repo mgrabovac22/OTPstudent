@@ -1,6 +1,5 @@
 package hr.wortex.otpstudent.ui.editProfile
 
-import ChangePasswordDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -39,12 +38,33 @@ import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
-import hr.wortex.otpstudent.ui.profil.Dimens
-import hr.wortex.otpstudent.ui.profil.ProfileColors
 import hr.wortex.otpstudent.ui.profil.edit.DateUtils
 import hr.wortex.otpstudent.ui.profil.edit.EditProfileState
 import hr.wortex.otpstudent.ui.profil.edit.EditProfileViewModel
 import java.util.Calendar
+
+private val AppGreen = Color(0xFF1B6E2A)
+private val AppOrange = Color(0xFFf2701b)
+private val White = Color.White
+private val Black = Color.Black
+
+private object ProfileColors {
+    val LogoTeal = Color(0xFF006B5C)
+    val LogoOrange = Color(0xFFFF8C42)
+    val AvatarBackground = Color(0xFFF4A5B9)
+    val CardBackground = Color(0xFFE8E8E8)
+    val ButtonBackground = AppOrange
+}
+
+private object Dimens {
+    val PaddingSmall = 8.dp
+    val PaddingMedium = 12.dp
+    val PaddingLarge = 16.dp
+    val PaddingExtraLarge = 24.dp
+    val AvatarSize = 120.dp
+    val CardHeight = 56.dp
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,15 +88,16 @@ fun EditProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Uredi profil", fontWeight = FontWeight.Bold) },
+                title = { Text("Uredi profil", fontWeight = FontWeight.Bold, color = White) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag", tint = White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppGreen)
             )
-        }
+        },
+        containerColor = White
     ) { scaffoldPadding ->
 
         Box(
@@ -85,7 +106,7 @@ fun EditProfileScreen(
                 .padding(scaffoldPadding)
         ) {
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = AppGreen)
             } else {
                 EditProfileContent(
                     state = state,
@@ -100,7 +121,7 @@ fun EditProfileScreen(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(16.dp)
-                        .background(Color.White.copy(alpha = 0.9f))
+                        .background(White.copy(alpha = 0.9f))
                 )
             }
         }
@@ -204,7 +225,7 @@ fun EditProfileContent(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Text("?", fontSize = 48.sp)
+                Text("?", fontSize = 48.sp, color = Black)
             }
 
             Box(
@@ -214,10 +235,10 @@ fun EditProfileContent(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Promijeni sliku",
-                    tint = Color.White,
+                    tint = White,
                     modifier = Modifier
                         .padding(12.dp)
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                        .background(Black.copy(alpha = 0.5f), CircleShape)
                         .padding(4.dp)
                         .size(16.dp)
                 )
@@ -235,7 +256,7 @@ fun EditProfileContent(
             )
         }
 
-        Text("Klikni na sliku za promjenu", fontSize = 12.sp, color = ProfileColors.LogoTeal)
+        Text("Klikni na sliku za promjenu", fontSize = 12.sp, color = AppGreen)
 
         Spacer(Modifier.height(Dimens.PaddingExtraLarge))
 
@@ -244,21 +265,24 @@ fun EditProfileContent(
             value = state.email,
             onValueChange = {},
             readOnly = true,
-            error = state.emailError
+            error = state.emailError,
+            colorConfig = TextFieldColorConfig(AppGreen, Black)
         )
 
         EditProfileTextField(
             label = "Ime",
             value = state.firstName,
             onValueChange = viewModel::onFirstNameChange,
-            error = state.firstNameError
+            error = state.firstNameError,
+            colorConfig = TextFieldColorConfig(AppGreen, Black)
         )
 
         EditProfileTextField(
             label = "Prezime",
             value = state.lastName,
             onValueChange = viewModel::onLastNameChange,
-            error = state.lastNameError
+            error = state.lastNameError,
+            colorConfig = TextFieldColorConfig(AppGreen, Black)
         )
 
         EditProfileTextField(
@@ -266,14 +290,16 @@ fun EditProfileContent(
             value = state.yearOfStudy,
             onValueChange = viewModel::onYearOfStudyChange,
             keyboardType = KeyboardType.Number,
-            error = state.yearOfStudyError
+            error = state.yearOfStudyError,
+            colorConfig = TextFieldColorConfig(AppGreen, Black)
         )
 
         EditProfileTextField(
             label = "Smjer studija",
             value = state.areaOfStudy,
             onValueChange = viewModel::onAreaOfStudyChange,
-            error = state.areaOfStudyError
+            error = state.areaOfStudyError,
+            colorConfig = TextFieldColorConfig(AppGreen, Black)
         )
 
         OutlinedTextField(
@@ -283,7 +309,7 @@ fun EditProfileContent(
             readOnly = true,
             trailingIcon = {
                 IconButton(onClick = { showDatePicker() }) {
-                    Icon(Icons.Default.DateRange, contentDescription = "Odaberi datum")
+                    Icon(Icons.Default.DateRange, contentDescription = "Odaberi datum", tint = AppGreen)
                 }
             },
             modifier = Modifier
@@ -292,12 +318,18 @@ fun EditProfileContent(
                 .clickable { showDatePicker() },
             enabled = true,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ProfileColors.LogoTeal,
-                focusedLabelColor = ProfileColors.LogoTeal,
-                cursorColor = ProfileColors.LogoTeal,
-                disabledTextColor = Color.Black,
-                disabledLabelColor = Color.Gray,
-                disabledBorderColor = Color.Gray
+                focusedBorderColor = AppGreen,
+                focusedLabelColor = AppGreen,
+                cursorColor = AppGreen,
+                unfocusedBorderColor = AppGreen,
+                unfocusedLabelColor = AppGreen,
+
+                focusedTextColor = Black,
+                unfocusedTextColor = Black,
+
+                disabledTextColor = Black,
+                disabledLabelColor = AppGreen,
+                disabledBorderColor = AppGreen
             )
         )
 
@@ -308,12 +340,12 @@ fun EditProfileContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = ProfileColors.ButtonBackground),
+            colors = ButtonDefaults.buttonColors(containerColor = AppOrange),
             shape = RoundedCornerShape(Dimens.PaddingLarge)
         ) {
             Text(
                 text = "Spremi promjene",
-                color = Color.White,
+                color = White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
@@ -321,7 +353,7 @@ fun EditProfileContent(
 
         Text(
             text = "Promijeni lozinku",
-            color = ProfileColors.LogoTeal,
+            color = AppGreen,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             modifier = Modifier
@@ -340,6 +372,11 @@ fun EditProfileContent(
     }
 }
 
+data class TextFieldColorConfig(
+    val focusedPrimary: Color,
+    val unfocusedPrimary: Color
+)
+
 @Composable
 fun EditProfileTextField(
     label: String,
@@ -347,7 +384,8 @@ fun EditProfileTextField(
     onValueChange: (String) -> Unit,
     keyboardType: KeyboardType = KeyboardType.Text,
     readOnly: Boolean = false,
-    error: String? = null
+    error: String? = null,
+    colorConfig: TextFieldColorConfig
 ) {
     Column(
         modifier = Modifier
@@ -364,9 +402,13 @@ fun EditProfileTextField(
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             isError = error != null,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ProfileColors.LogoTeal,
-                focusedLabelColor = ProfileColors.LogoTeal,
-                cursorColor = ProfileColors.LogoTeal,
+                focusedBorderColor = colorConfig.focusedPrimary,
+                focusedLabelColor = colorConfig.focusedPrimary,
+                cursorColor = colorConfig.focusedPrimary,
+                unfocusedBorderColor = colorConfig.focusedPrimary,
+                unfocusedLabelColor = colorConfig.focusedPrimary,
+                focusedTextColor = colorConfig.unfocusedPrimary,
+                unfocusedTextColor = colorConfig.unfocusedPrimary,
                 errorBorderColor = MaterialTheme.colorScheme.error,
                 errorLabelColor = MaterialTheme.colorScheme.error
             )
