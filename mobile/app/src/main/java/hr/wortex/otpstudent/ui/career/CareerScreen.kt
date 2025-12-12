@@ -32,18 +32,17 @@ fun CareerScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF1B6E2A))
-                .padding(vertical = 14.dp),
+                .padding(vertical = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "POSLOVNA ZONA",
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -61,7 +60,6 @@ fun CareerScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Ovdje NEMOJ fillMaxSize, da djeca ne rastu preko cijelog ekrana
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,8 +97,8 @@ private fun CareerOptionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()          // <— bitno
-            .heightIn(min = 110.dp)       // minimalna visina, ali ne raste beskonačno
+            .wrapContentHeight()
+            .heightIn(min = 110.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
@@ -110,7 +108,7 @@ private fun CareerOptionCard(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()           // <— samo širina, ne visina
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -139,14 +137,6 @@ private fun CareerOptionCard(
                     fontSize = 13.sp
                 )
             }
-
-            Text(
-                text = "Otvori",
-                color = Color.White,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.End
-            )
         }
     }
 }

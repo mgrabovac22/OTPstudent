@@ -33,6 +33,11 @@ import hr.wortex.otpstudent.ui.registration.utils.DateUtils
 import hr.wortex.otpstudent.ui.registration.utils.ValidationUtils
 import java.util.Calendar
 
+private val AppDarkGreen = Color(0xFF056f52)
+private val AppOrange = Color(0xFFf2701b)
+private val InputBorderColor = Color(0xFFCCCCCC)
+private val InputTextColor = Color.Black
+
 @Composable
 fun RegistrationScreen(paddingValues: PaddingValues, navController: NavController) {
 
@@ -82,7 +87,7 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF056f52)
+        color = AppDarkGreen
     ) {
         Column(
             modifier = Modifier
@@ -103,12 +108,11 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Row {
                 Text("OTP", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                Text("Student", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFf2701b))
+                Text("Student", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = AppOrange)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            //First name
             CreateTextInput(
                 label = "Ime",
                 value = firstName,
@@ -123,7 +127,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Last name
             CreateTextInput(
                 label = "Prezime",
                 value = lastName,
@@ -138,7 +141,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Email
             CreateTextInput(
                 label = "Email",
                 value = email,
@@ -153,7 +155,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Password
             CreateTextInput(
                 label = "Lozinka",
                 value = password,
@@ -168,7 +169,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Confirm password
             CreateTextInput(
                 label = "Potvrdi lozinku",
                 value = confirmPassword,
@@ -183,7 +183,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Area of study
             CreateTextInput(
                 label = "Smjer studija",
                 value = areaOfStudy,
@@ -198,7 +197,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Year of study
             CreateTextInput(
                 label = "Godina studija",
                 value = yearOfStudy,
@@ -213,7 +211,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Date of birth
             CreateDatePickerInput(
                 dateOfBirth = dateOfBirth,
                 onDateSelected = { selected ->
@@ -225,7 +222,6 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            //Higher education body
             CreateDropdownMenu(
                 value = higherEducationBody,
                 label = "Visoko obrazovno tijelo",
@@ -321,7 +317,7 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 90.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
+                colors = ButtonDefaults.buttonColors(containerColor = AppOrange)
             ) {
                 if (uiState.value == RegisterUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
@@ -343,7 +339,7 @@ fun RegistrationScreen(paddingValues: PaddingValues, navController: NavControlle
             Spacer(modifier = Modifier.height(10.dp))
 
             Row {
-                Text("Imaš račun? ", color = Color(0xFFf2701b))
+                Text("Imaš račun? ", color = AppOrange)
                 Text(
                     "Prijavi se!",
                     color = Color.White,
@@ -370,7 +366,7 @@ fun CreateTextInput(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label, color = Color.Unspecified) },
+        label = { Text(label, color = if (error != null) Color.Red else Color.Gray) },
         leadingIcon = leadingIcon,
         isError = error != null,
         shape = RoundedCornerShape(8.dp),
@@ -379,14 +375,31 @@ fun CreateTextInput(
             .padding(horizontal = 20.dp),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White,
-            unfocusedIndicatorColor = Color.White
+            unfocusedContainerColor = Color.White,
+            errorContainerColor = Color.White,
+
+            focusedTextColor = InputTextColor,
+            unfocusedTextColor = InputTextColor,
+
+            focusedIndicatorColor = AppDarkGreen,
+            focusedLeadingIconColor = AppDarkGreen,
+            focusedLabelColor = AppDarkGreen,
+            cursorColor = AppDarkGreen,
+
+            unfocusedIndicatorColor = InputBorderColor,
+            unfocusedLeadingIconColor = AppDarkGreen.copy(alpha = 0.6f),
+            unfocusedLabelColor = Color.Gray,
+
+            errorIndicatorColor = Color.Red,
+            errorLeadingIconColor = Color.Red,
+            errorLabelColor = Color.Red
         ),
         visualTransformation = if (isVisible) VisualTransformation.None else PasswordVisualTransformation(),
     )
 
     if (error != null) {
         Text(
-            text = error ?: "",
+            text = error,
             color = Color.Red,
             fontSize = 14.sp,
             modifier = Modifier
@@ -438,8 +451,8 @@ fun CreateDatePickerInput(
                 .padding(horizontal = 20.dp)
                 .clickable { openDatePicker() },
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            tonalElevation = 1.dp
+            color = Color.White,
+            tonalElevation = 0.dp
         ) {
             Row(
                 modifier = Modifier
@@ -450,6 +463,7 @@ fun CreateDatePickerInput(
                 Icon(
                     imageVector = Icons.Rounded.DateRange,
                     contentDescription = null,
+                    tint = AppDarkGreen
                 )
 
                 Spacer(modifier = Modifier.width(10.dp))
@@ -458,13 +472,13 @@ fun CreateDatePickerInput(
                     Text(
                         text = "Datum rođenja",
                         fontSize = 12.sp,
-                        color = Color.Unspecified
+                        color = if (error != null) Color.Red else Color.Gray
                     )
 
                     Text(
                         text = dateOfBirth.ifBlank { "Unesite datum rođenja" },
                         fontSize = 16.sp,
-                        color = if (dateOfBirth.isBlank()) Color.DarkGray else Color.Black,
+                        color = if (dateOfBirth.isBlank()) Color.DarkGray else InputTextColor,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -503,8 +517,8 @@ fun CreateDropdownMenu(
                 .padding(horizontal = 20.dp)
                 .clickable { showDialog = true },
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            tonalElevation = 1.dp
+            color = Color.White,
+            tonalElevation = 0.dp
         ) {
             Row(
                 modifier = Modifier
@@ -515,6 +529,7 @@ fun CreateDropdownMenu(
                 Icon(
                     imageVector = Icons.Rounded.Home,
                     contentDescription = null,
+                    tint = AppDarkGreen
                 )
 
                 Spacer(modifier = Modifier.width(10.dp))
@@ -523,13 +538,13 @@ fun CreateDropdownMenu(
                     Text(
                         text = label,
                         fontSize = 12.sp,
-                        color = if (error != null) Color.Red else Color.Unspecified
+                        color = if (error != null) Color.Red else Color.Gray
                     )
 
                     Text(
                         text = value.ifBlank { "Odaberite obrazovno tijelo" },
                         fontSize = 16.sp,
-                        color = if (value.isBlank()) Color.DarkGray else Color.Black,
+                        color = if (value.isBlank()) Color.DarkGray else InputTextColor,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -554,7 +569,7 @@ fun CreateDropdownMenu(
             confirmButton = {},
             text = {
                 Column {
-                    Text("Odaberite obrazovno tijelo", fontSize = 18.sp)
+                    Text("Odaberite obrazovno tijelo", fontSize = 18.sp, color = InputTextColor)
 
                     Spacer(modifier = Modifier.height(10.dp))
 
@@ -574,9 +589,10 @@ fun CreateDropdownMenu(
                                 onClick = {
                                     onValueChange(id, label)
                                     showDialog = false
-                                }
+                                },
+                                colors = RadioButtonDefaults.colors(selectedColor = AppDarkGreen)
                             )
-                            Text(text = label, fontSize = 16.sp)
+                            Text(text = label, fontSize = 16.sp, color = InputTextColor)
                         }
                     }
                 }

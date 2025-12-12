@@ -108,7 +108,8 @@ fun StudentJobDetailsScreen(
                 )
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color.White
     ) { padding ->
 
         when {

@@ -35,6 +35,38 @@ import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import hr.wortex.otpstudent.di.DependencyProvider
 import hr.wortex.otpstudent.domain.model.UserProfile
 
+private val AppGreen = Color(0xFF1B6E2A)
+private val AppOrange = Color(0xFFf2701b)
+private val White = Color.White
+private val Black = Color.Black
+
+private object ProfileDesign {
+    val LogoTeal = Color(0xFF006B5C)
+    val LogoOrange = Color(0xFFFF8C42)
+    val CardBackground = Color(0xFFE8E8E8)
+    val ButtonBackground = AppOrange
+    val AvatarSize = 120.dp
+    val CardHeight = 56.dp
+    val PaddingSmall = 8.dp
+    val PaddingMedium = 12.dp
+    val PaddingLarge = 16.dp
+    val PaddingExtraLarge = 24.dp
+}
+
+private object ProfileStrings {
+    const val Title = "Profil"
+    const val Edit = "Uredi"
+    const val ErrorPrefix = "Greška: "
+    const val FileNotSelected = "Nije odabrana nijedna datoteka"
+    const val UploadCv = "Upload CV"
+    const val SelectCv = "Odaberi CV"
+    const val UploadSuccess = "CV uspješno učitan"
+    const val FacultyName = "Fakultet organizacije i informatike"
+    const val YearNotSet = "Godina nije upisana"
+    const val AreaNotSet = ""
+    fun yearOfStudyFormatted(year: Int) = "$year. godina"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -43,6 +75,10 @@ fun ProfileScreen(
 ) {
     val viewModel: ProfileViewModel = viewModel { ProfileViewModel(DependencyProvider.userRepository) }
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadUserProfile()
+    }
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf("") }
@@ -64,7 +100,8 @@ fun ProfileScreen(
     )
 
     Scaffold(
-        topBar = { ProfileTopBar(onEditProfile) }
+        topBar = { ProfileTopBar(onEditProfile) },
+        containerColor = White
     ) { paddingValues ->
         when (uiState) {
             is ProfileUiState.Loading -> ProfileLoadingScreen(paddingValues)
@@ -102,7 +139,7 @@ private fun ProfileLoadingScreen(padding: PaddingValues) {
             .fillMaxSize()
             .padding(padding),
         contentAlignment = Alignment.Center
-    ) { CircularProgressIndicator() }
+    ) { CircularProgressIndicator(color = AppGreen) }
 }
 
 @Composable
@@ -125,36 +162,20 @@ private fun ProfileErrorScreen(message: String, padding: PaddingValues) {
 @Composable
 private fun ProfileTopBar(onEditProfile: () -> Unit) {
     TopAppBar(
-        title = { ProfileTopBarTitle() },
+        title = {
+            Text(
+                text = ProfileStrings.Title,
+                fontWeight = FontWeight.Bold,
+                color = White // Bijeli tekst
+            )
+        },
         actions = {
             IconButton(onClick = onEditProfile) {
-                Icon(Icons.Default.Edit, contentDescription = ProfileStrings.Edit)
+                Icon(Icons.Default.Edit, contentDescription = ProfileStrings.Edit, tint = White) // Bijela ikona
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = AppGreen) // Zelena pozadina
     )
-}
-
-@Composable
-private fun ProfileTopBarTitle() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = ProfileStrings.AppNameOtp,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = ProfileColors.LogoTeal
-        )
-        Text(
-            text = ProfileStrings.AppNameStudent,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = ProfileColors.LogoOrange
-        )
-    }
 }
 
 @Composable
@@ -166,23 +187,21 @@ private fun ProfileContent(
     messageText: String,
     onUploadToServer: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
-            .padding(Dimens.PaddingLarge)
+            .padding(ProfileDesign.PaddingLarge)
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(Dimens.PaddingExtraLarge))
+        Spacer(Modifier.height(ProfileDesign.PaddingExtraLarge))
 
         Box(
             modifier = Modifier
-                .size(Dimens.AvatarSize)
+                .size(ProfileDesign.AvatarSize)
                 .clip(CircleShape)
                 .background(Color.LightGray),
             contentAlignment = Alignment.Center
@@ -207,47 +226,47 @@ private fun ProfileContent(
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
-                Text("?", fontSize = 48.sp)
+                Text("?", fontSize = 48.sp, color = Black)
             }
         }
 
-        Spacer(Modifier.height(Dimens.PaddingLarge))
+        Spacer(Modifier.height(ProfileDesign.PaddingLarge))
 
         Text(
             text = "${user.firstName} ${user.lastName}",
             fontSize = 22.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Black
+            color = Black
         )
 
-        Spacer(Modifier.height(Dimens.PaddingExtraLarge))
+        Spacer(Modifier.height(ProfileDesign.PaddingExtraLarge))
 
         ProfileInfoCard(user.email)
-        Spacer(Modifier.height(Dimens.PaddingMedium))
+        Spacer(Modifier.height(ProfileDesign.PaddingMedium))
         ProfileInfoCard(ProfileStrings.FacultyName)
-        Spacer(Modifier.height(Dimens.PaddingMedium))
+        Spacer(Modifier.height(ProfileDesign.PaddingMedium))
         ProfileInfoCard(user.yearOfStudy?.let { ProfileStrings.yearOfStudyFormatted(it) } ?: ProfileStrings.YearNotSet)
-        Spacer(Modifier.height(Dimens.PaddingMedium))
+        Spacer(Modifier.height(ProfileDesign.PaddingMedium))
         ProfileInfoCard(user.areaOfStudy ?: ProfileStrings.AreaNotSet)
 
-        Spacer(Modifier.height(Dimens.PaddingMedium))
+        Spacer(Modifier.height(ProfileDesign.PaddingMedium))
 
         UploadCvCard(selectedPdfName, onUploadClick)
 
-        Spacer(Modifier.height(Dimens.PaddingMedium))
+        Spacer(Modifier.height(ProfileDesign.PaddingMedium))
 
         if (selectedPdfName.isNotEmpty()) {
             Button(
                 onClick = onUploadToServer,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingLarge),
-                colors = ButtonDefaults.buttonColors(containerColor = ProfileColors.ButtonBackground),
-                shape = RoundedCornerShape(Dimens.PaddingLarge)
+                    .padding(horizontal = ProfileDesign.PaddingLarge),
+                colors = ButtonDefaults.buttonColors(containerColor = AppOrange), // Narančasti gumb
+                shape = RoundedCornerShape(ProfileDesign.PaddingLarge)
             ) {
                 Text(
                     text = ProfileStrings.UploadCv,
-                    color = Color.White,
+                    color = White, // Bijeli tekst gumba
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center,
@@ -256,18 +275,18 @@ private fun ProfileContent(
                         .padding(10.dp)
                 )
             }
-            Spacer(Modifier.height(Dimens.PaddingSmall))
+            Spacer(Modifier.height(ProfileDesign.PaddingSmall))
         }
 
         if (messageText.isNotEmpty()) {
             Text(
                 text = messageText,
-                color = if (messageText == ProfileStrings.UploadSuccess) Color.Green else MaterialTheme.colorScheme.error,
+                color = if (messageText == ProfileStrings.UploadSuccess) AppGreen else MaterialTheme.colorScheme.error,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingLarge)
+                    .padding(horizontal = ProfileDesign.PaddingLarge)
             )
         }
 
@@ -278,22 +297,22 @@ private fun ProfileContent(
 @Composable
 private fun UploadCvCard(selectedPdfName: String, onUploadClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().height(Dimens.CardHeight),
-        shape = RoundedCornerShape(Dimens.PaddingSmall),
-        colors = CardDefaults.cardColors(containerColor = ProfileColors.CardBackground)
+        modifier = Modifier.fillMaxWidth().height(ProfileDesign.CardHeight),
+        shape = RoundedCornerShape(ProfileDesign.PaddingSmall),
+        colors = CardDefaults.cardColors(containerColor = ProfileDesign.CardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.PaddingLarge),
+            modifier = Modifier.fillMaxSize().padding(horizontal = ProfileDesign.PaddingLarge),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = if (selectedPdfName.isEmpty()) ProfileStrings.UploadCv else selectedPdfName,
                 fontSize = 16.sp,
-                color = Color.DarkGray
+                color = Black // Crni tekst
             )
             IconButton(onClick = onUploadClick) {
-                Icon(Icons.Default.Edit, contentDescription = ProfileStrings.SelectCv, tint = Color.Gray)
+                Icon(Icons.Default.Edit, contentDescription = ProfileStrings.SelectCv, tint = Black.copy(alpha = 0.6f)) // Tamna ikona
             }
         }
     }
@@ -302,15 +321,15 @@ private fun UploadCvCard(selectedPdfName: String, onUploadClick: () -> Unit) {
 @Composable
 private fun ProfileInfoCard(text: String) {
     Card(
-        modifier = Modifier.fillMaxWidth().height(Dimens.CardHeight),
-        shape = RoundedCornerShape(Dimens.PaddingSmall),
-        colors = CardDefaults.cardColors(containerColor = ProfileColors.CardBackground)
+        modifier = Modifier.fillMaxWidth().height(ProfileDesign.CardHeight),
+        shape = RoundedCornerShape(ProfileDesign.PaddingSmall),
+        colors = CardDefaults.cardColors(containerColor = ProfileDesign.CardBackground)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().padding(horizontal = Dimens.PaddingLarge),
+            modifier = Modifier.fillMaxSize().padding(horizontal = ProfileDesign.PaddingLarge),
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(text = text, fontSize = 16.sp, color = Color.DarkGray)
+            Text(text = text, fontSize = 16.sp, color = Black)
         }
     }
 }
@@ -324,36 +343,4 @@ private fun Uri.getDisplayName(context: Context): String? {
     } catch (e: Exception) {
         null
     }
-}
-
-public object ProfileColors {
-    val LogoTeal = Color(0xFF006B5C)
-    val LogoOrange = Color(0xFFFF8C42)
-    val AvatarBackground = Color(0xFFF4A5B9)
-    val CardBackground = Color(0xFFE8E8E8)
-    val ButtonBackground = Color(0xFFf2701b)
-}
-
-public object Dimens {
-    val PaddingSmall = 8.dp
-    val PaddingMedium = 12.dp
-    val PaddingLarge = 16.dp
-    val PaddingExtraLarge = 24.dp
-    val AvatarSize = 120.dp
-    val CardHeight = 56.dp
-}
-
-public object ProfileStrings {
-    const val AppNameOtp = "OTP"
-    const val AppNameStudent = "Student"
-    const val Edit = "Uredi"
-    const val ErrorPrefix = "Greška: "
-    const val FileNotSelected = "Nije odabrana nijedna datoteka"
-    const val UploadCv = "Upload CV"
-    const val SelectCv = "Odaberi CV"
-    const val UploadSuccess = "CV uspješno učitan"
-    const val FacultyName = "Fakultet organizacije i informatike"
-    const val YearNotSet = "Godina nije upisana"
-    const val AreaNotSet = ""
-    fun yearOfStudyFormatted(year: Int) = "$year. godina"
 }

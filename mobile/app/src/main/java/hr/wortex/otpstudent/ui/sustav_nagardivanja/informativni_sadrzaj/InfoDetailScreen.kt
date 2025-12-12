@@ -43,33 +43,41 @@ fun InfoDetailScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    val AppGreen = Color(0xFF1B6E2A)
+    val AppOrange = Color(0xFFf2701b)
+    val White = Color.White
+    val Black = Color.Black
+    val RedError = MaterialTheme.colorScheme.error
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detalji") },
+                title = { Text("Detalji", fontWeight = FontWeight.Bold, color = White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag", tint = White)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppGreen)
             )
-        }
+        },
+        containerColor = White
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center
         ) {
             when (val state = uiState) {
                 is InfoDetailUiState.Loading -> {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = AppGreen)
                 }
                 is InfoDetailUiState.Error -> {
                     Text(
                         text = state.message,
-                        color = Color.Red,
+                        color = RedError,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -83,11 +91,14 @@ fun InfoDetailScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Top
                     ) {
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         Text(
                             text = content.name,
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
+                            color = AppGreen,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -97,6 +108,7 @@ fun InfoDetailScreen(
                             text = content.description,
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Justify,
+                            color = Black,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -112,7 +124,8 @@ fun InfoDetailScreen(
                                 .fillMaxWidth()
                                 .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFf2701b)
+                                containerColor = AppOrange,
+                                contentColor = White
                             ),
                             shape = RoundedCornerShape(16.dp)
                         ) {

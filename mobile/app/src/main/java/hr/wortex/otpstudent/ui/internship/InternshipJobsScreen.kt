@@ -28,16 +28,28 @@ fun InternshipJobsScreen(
     val availableJobs = uiState.availableJobs
     val selectedJobIds = uiState.selectedJobIds
 
+    val AppGreen = Color(0xFF1B6E2A)
+    val AppOrange = Color(0xFFf2701b)
+    val White = Color.White
+    val Black = Color.Black
+    val RedError = MaterialTheme.colorScheme.error
+
+    val checkboxColors = CheckboxDefaults.colors(
+        checkedColor = AppGreen,
+        uncheckedColor = AppGreen,
+        checkmarkColor = White
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Prijava za praksu", fontWeight = FontWeight.Bold) },
+                title = { Text("Prijava za praksu", fontWeight = FontWeight.Bold, color = White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag", tint = White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppGreen)
             )
         },
         bottomBar = {
@@ -50,11 +62,12 @@ fun InternshipJobsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
+                colors = ButtonDefaults.buttonColors(containerColor = AppOrange, contentColor = White)
             ) {
                 Text("Dalje")
             }
-        }
+        },
+        containerColor = White
     ) {
         Column(
             modifier = Modifier
@@ -66,13 +79,14 @@ fun InternshipJobsScreen(
             Text(
                 text = "U kojem biste području unutar OTP banke željeli obavljati praksu?",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
+                color = AppGreen
             )
 
             uiState.jobsError?.let {
                 Text(
                     text = it,
-                    color = MaterialTheme.colorScheme.error,
+                    color = RedError,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -89,10 +103,11 @@ fun InternshipJobsScreen(
                     ) {
                         Checkbox(
                             checked = selectedJobIds.contains(job.id),
-                            onCheckedChange = { viewModel.toggleJobSelection(job.id) }
+                            onCheckedChange = { viewModel.toggleJobSelection(job.id) },
+                            colors = checkboxColors
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = job.name)
+                        Text(text = job.name, color = Black)
                     }
                 }
             }

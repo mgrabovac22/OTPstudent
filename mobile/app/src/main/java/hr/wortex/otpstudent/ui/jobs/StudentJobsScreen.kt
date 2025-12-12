@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -224,7 +226,8 @@ private fun JobFilterSegment(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         IconButton(
-            onClick = { onFilterChange(selectedFilter.previous()) }
+            onClick = { onFilterChange(selectedFilter.previous()) },
+            colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent, contentColor = Color.Black, disabledContainerColor = Color.Transparent, disabledContentColor = Color.Gray)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -237,11 +240,13 @@ private fun JobFilterSegment(
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(vertical = 8.dp),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = Color.Black
         )
 
         IconButton(
-            onClick = { onFilterChange(selectedFilter.next()) }
+            onClick = { onFilterChange(selectedFilter.next()) },
+            colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent, contentColor = Color.Black, disabledContainerColor = Color.Transparent, disabledContentColor = Color.Gray)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowForward,
