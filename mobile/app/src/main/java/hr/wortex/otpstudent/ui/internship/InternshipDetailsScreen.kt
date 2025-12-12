@@ -27,6 +27,12 @@ fun InternshipDetailsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    val AppGreen = Color(0xFF1B6E2A)
+    val AppOrange = Color(0xFFf2701b)
+    val White = Color.White
+    val Black = Color.Black
+    val RedError = MaterialTheme.colorScheme.error
+
     var expanded by remember { mutableStateOf(false) }
     val weeksOptions = (2..8).toList()
 
@@ -52,16 +58,35 @@ fun InternshipDetailsScreen(
         Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
     )
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = AppGreen,
+        unfocusedBorderColor = AppGreen,
+        focusedLabelColor = AppGreen,
+        unfocusedLabelColor = AppGreen,
+        focusedTextColor = Black,
+        unfocusedTextColor = Black,
+        cursorColor = AppGreen,
+        errorBorderColor = AppGreen,
+        errorLabelColor = AppGreen,
+        errorTextColor = Black,
+        errorCursorColor = AppGreen,
+        focusedTrailingIconColor = AppGreen,
+        unfocusedTrailingIconColor = AppGreen,
+        errorTrailingIconColor = AppGreen
+    )
+
+    val primaryTextColor = MaterialTheme.colorScheme.onSurface
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Prijava za praksu", fontWeight = FontWeight.Bold) },
+                title = { Text("Prijava za praksu", fontWeight = FontWeight.Bold, color = White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag", tint = White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppGreen)
             )
         },
         bottomBar = {
@@ -70,11 +95,12 @@ fun InternshipDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
+                colors = ButtonDefaults.buttonColors(containerColor = AppOrange, contentColor = White),
+                enabled = uiState.submissionState !is SubmissionState.Loading
             ) {
                 when (uiState.submissionState) {
                     is SubmissionState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = White)
                     }
                     is SubmissionState.Success -> {
                         Text("Prijava uspješna!")
@@ -84,7 +110,8 @@ fun InternshipDetailsScreen(
                     }
                 }
             }
-        }
+        },
+        containerColor = White
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +123,7 @@ fun InternshipDetailsScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text("Trajanje prakse:", style = MaterialTheme.typography.titleMedium)
+            Text("Trajanje prakse:", style = MaterialTheme.typography.titleMedium, color = AppGreen)
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -106,25 +133,29 @@ fun InternshipDetailsScreen(
                     onValueChange = {},
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = textFieldColors
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
                 ) {
                     weeksOptions.forEach { week ->
                         DropdownMenuItem(
-                            text = { Text("$week tjedana") },
+                            text = { Text("$week tjedana", color = Black) },
                             onClick = {
                                 viewModel.updateDuration(week)
                                 expanded = false
-                            }
+                            },
+                            colors = MenuDefaults.itemColors(
+                                textColor = primaryTextColor,
+                            )
                         )
                     }
                 }
             }
 
-            Text("Kada bi Vam najviše odgovaralo provođenje prakse?", style = MaterialTheme.typography.titleMedium)
+            Text("Kada bi Vam najviše odgovaralo provođenje prakse?", style = MaterialTheme.typography.titleMedium, color = AppGreen)
 
             Box {
                 val dateValue = when {
@@ -137,7 +168,8 @@ fun InternshipDetailsScreen(
                     onValueChange = {},
                     label = { Text("Odaberite željeni datum početka prakse") },
                     readOnly = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = textFieldColors
                 )
                 Box(
                     modifier = Modifier
@@ -148,16 +180,18 @@ fun InternshipDetailsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text("Što očekujete od prakse u OTP banci?", style = MaterialTheme.typography.titleMedium)
+            Text("Što očekujete od prakse u OTP banci?", style = MaterialTheme.typography.titleMedium, color = AppGreen)
             OutlinedTextField(
                 value = uiState.practiceExpectations,
                 onValueChange = { viewModel.updateExpectations(it) },
-                modifier = Modifier.fillMaxWidth().weight(1f),
-                placeholder = { Text("Unesite svoja očekivanja...") }
+                modifier = Modifier.fillMaxWidth().height(150.dp),
+                placeholder = { Text("Unesite svoja očekivanja...", color = AppGreen.copy(alpha = 0.5f)) },
+                colors = textFieldColors,
+                isError = uiState.detailsError != null
             )
-            
+
             uiState.detailsError?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                Text(text = it, color = RedError, style = MaterialTheme.typography.bodySmall)
             }
         }
     }

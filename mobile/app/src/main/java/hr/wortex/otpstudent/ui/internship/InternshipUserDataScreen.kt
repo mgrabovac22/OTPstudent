@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +38,11 @@ fun InternshipUserDataScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val user = uiState.user
+    val AppGreen = Color(0xFF1B6E2A)
+    val AppOrange = Color(0xFFf2701b)
+    val White = Color.White
+    val Black = Color.Black
+    val RedError = MaterialTheme.colorScheme.error
 
     fun formatDisplayDate(apiDate: String?): String {
         if (apiDate == null) return ""
@@ -50,16 +56,30 @@ fun InternshipUserDataScreen(
         }
     }
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = AppGreen,
+        unfocusedBorderColor = AppGreen,
+        focusedLabelColor = AppGreen,
+        unfocusedLabelColor = AppGreen,
+        focusedTextColor = Black,
+        unfocusedTextColor = Black,
+        cursorColor = AppGreen,
+        errorBorderColor = AppGreen,
+        errorLabelColor = AppGreen,
+        errorTextColor = Black,
+        errorCursorColor = AppGreen
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Prijava za praksu", fontWeight = FontWeight.Bold) },
+                title = { Text("Prijava za praksu", fontWeight = FontWeight.Bold, color = White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Natrag", tint = White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppGreen)
             )
         },
         bottomBar = {
@@ -72,11 +92,12 @@ fun InternshipUserDataScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
+                colors = ButtonDefaults.buttonColors(containerColor = AppOrange, contentColor = White)
             ) {
                 Text("Dalje")
             }
-        }
+        },
+        containerColor = White
     ) {
         Column(
             modifier = Modifier
@@ -87,9 +108,10 @@ fun InternshipUserDataScreen(
         ) {
             if (user != null) {
                 Text(
-                    text = "Molimo Vas da provjerite točnost upisanih podataka i u prazna polja upišete tražene podatke.",
+                    text = "Molimo Vas da provjerite točnost upisanih podataka i u prazna polja upišite tražene podatke.",
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = AppGreen
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -98,7 +120,8 @@ fun InternshipUserDataScreen(
                     onValueChange = {},
                     label = { Text("Ime i Prezime") },
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = true
+                    readOnly = true,
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -107,7 +130,8 @@ fun InternshipUserDataScreen(
                     onValueChange = {},
                     label = { Text("Datum Rođenja") },
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = true
+                    readOnly = true,
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -116,7 +140,8 @@ fun InternshipUserDataScreen(
                     onValueChange = {},
                     label = { Text("Naziv Fakulteta") },
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = true
+                    readOnly = true,
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -125,7 +150,8 @@ fun InternshipUserDataScreen(
                     onValueChange = {},
                     label = { Text("Smjer") },
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = true
+                    readOnly = true,
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -134,7 +160,8 @@ fun InternshipUserDataScreen(
                     onValueChange = {},
                     label = { Text("Godina pohađanja") },
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = true
+                    readOnly = true,
+                    colors = textFieldColors
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -144,12 +171,13 @@ fun InternshipUserDataScreen(
                     label = { Text("Adresa") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = uiState.addressError != null,
-                    readOnly = false
+                    readOnly = false,
+                    colors = textFieldColors
                 )
                 uiState.addressError?.let {
                     Text(
                         text = it,
-                        color = MaterialTheme.colorScheme.error,
+                        color = RedError,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -162,12 +190,13 @@ fun InternshipUserDataScreen(
                     label = { Text("Kontakt broj") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = uiState.contactNumberError != null,
-                    readOnly = false
+                    readOnly = false,
+                    colors = textFieldColors
                 )
                 uiState.contactNumberError?.let {
                     Text(
                         text = it,
-                        color = MaterialTheme.colorScheme.error,
+                        color = RedError,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 16.dp)
                     )
@@ -179,9 +208,10 @@ fun InternshipUserDataScreen(
                     onValueChange = {},
                     label = { Text("E-mail") },
                     modifier = Modifier.fillMaxWidth(),
-                    readOnly = true
+                    readOnly = true,
+                    colors = textFieldColors
                 )
-                
+
             } else {
                 Text("Učitavanje podataka...")
             }
