@@ -44,6 +44,11 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var generalError by remember { mutableStateOf<String?>(null) }
 
+    val AppDarkGreen = Color(0xFF056f52)
+    val AppOrange = Color(0xFFf2701b)
+    val InputBorderColor = Color(0xFFCCCCCC)
+    val InputTextColor = Color.Black
+
     LaunchedEffect(uiState) {
         when (uiState) {
             is LoginUiState.Success -> {
@@ -62,7 +67,7 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF056f52)
+        color = AppDarkGreen
     ) {
         Column(
             modifier = Modifier
@@ -82,19 +87,18 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
 
             Row {
                 Text("OTP", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                Text("Student", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFf2701b))
+                Text("Student", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = AppOrange)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Email
             TextField(
                 value = email,
                 onValueChange = {
                     email = it
                     emailError = null
                 },
-                label = { Text(emailError ?: "Email", color = if (emailError != null) Color.Red else Color.Unspecified) },
+                label = { Text(emailError ?: "Email", color = if (emailError != null) Color.Red else Color.Gray) },
                 leadingIcon = { Icon(Icons.Rounded.AccountCircle, contentDescription = null) },
                 isError = emailError != null,
                 shape = RoundedCornerShape(8.dp),
@@ -103,7 +107,24 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                     .padding(horizontal = 20.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
-                    unfocusedIndicatorColor = Color.White
+                    unfocusedContainerColor = Color.White,
+                    errorContainerColor = Color.White,
+
+                    focusedTextColor = InputTextColor,
+                    unfocusedTextColor = InputTextColor,
+
+                    focusedIndicatorColor = AppDarkGreen,
+                    focusedLeadingIconColor = AppDarkGreen,
+                    focusedLabelColor = AppDarkGreen,
+                    cursorColor = AppDarkGreen,
+
+                    unfocusedIndicatorColor = InputBorderColor,
+                    unfocusedLeadingIconColor = AppDarkGreen.copy(alpha = 0.6f),
+                    unfocusedLabelColor = Color.Gray,
+
+                    errorIndicatorColor = Color.Red,
+                    errorLeadingIconColor = Color.Red,
+                    errorLabelColor = Color.Red
                 )
             )
 
@@ -120,14 +141,13 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Password
             TextField(
                 value = password,
                 onValueChange = {
                     password = it
                     passwordError = null
                 },
-                label = { Text(passwordError ?: "Lozinka", color = if (passwordError != null) Color.Red else Color.Unspecified) },
+                label = { Text(passwordError ?: "Lozinka", color = if (passwordError != null) Color.Red else Color.Gray) },
                 leadingIcon = { Icon(Icons.Rounded.Lock, contentDescription = null) },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 isError = passwordError != null,
@@ -137,7 +157,24 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                     .padding(horizontal = 20.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
-                    unfocusedIndicatorColor = Color.White
+                    unfocusedContainerColor = Color.White,
+                    errorContainerColor = Color.White,
+
+                    focusedTextColor = InputTextColor,
+                    unfocusedTextColor = InputTextColor,
+
+                    focusedIndicatorColor = AppDarkGreen,
+                    focusedLeadingIconColor = AppDarkGreen,
+                    focusedLabelColor = AppDarkGreen,
+                    cursorColor = AppDarkGreen,
+
+                    unfocusedIndicatorColor = InputBorderColor,
+                    unfocusedLeadingIconColor = AppDarkGreen.copy(alpha = 0.6f),
+                    unfocusedLabelColor = Color.Gray,
+
+                    errorIndicatorColor = Color.Red,
+                    errorLeadingIconColor = Color.Red,
+                    errorLabelColor = Color.Red
                 )
             )
 
@@ -166,7 +203,7 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 90.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b))
+                colors = ButtonDefaults.buttonColors(containerColor = AppOrange)
             ) {
                 if (uiState == LoginUiState.Loading) {
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
@@ -190,13 +227,13 @@ fun LoginScreen(paddingValues: PaddingValues, navController: NavController) {
             Text(
                 text = "Zaboravljena lozinka?",
                 color = Color.White,
-                modifier = Modifier.clickable { /* TODO: handle forgot password */ }
+                modifier = Modifier.clickable { }
             )
 
             Spacer(modifier = Modifier.height(40.dp))
 
             Row {
-                Text("Nemaš račun? ", color = Color(0xFFf2701b))
+                Text("Nemaš račun? ", color = AppOrange)
                 Text(
                     "Registriraj se!",
                     color = Color.White,
