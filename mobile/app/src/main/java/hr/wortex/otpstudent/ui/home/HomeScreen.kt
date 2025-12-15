@@ -35,7 +35,7 @@ private object HomeStrings {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(paddingValues: PaddingValues, onRewardClick: () -> Unit = {}) {
+fun HomeScreen(paddingValues: PaddingValues, onRewardClick: () -> Unit = {}, onChatClick: () -> Unit = {}) {
     val getUserUseCase = remember { GetUser(DependencyProvider.userRepository) }
     val viewModel = remember { HomeViewModel(getUserUseCase) }
     val uiState by viewModel.uiState.collectAsState()
@@ -131,7 +131,7 @@ fun HomeScreen(paddingValues: PaddingValues, onRewardClick: () -> Unit = {}) {
 
                                 Button(
                                     onClick = {
-                                        // TODO: implement logic
+                                        onChatClick()
                                     },
                                     modifier = Modifier.padding(10.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFf2701b), contentColor = Color.White),

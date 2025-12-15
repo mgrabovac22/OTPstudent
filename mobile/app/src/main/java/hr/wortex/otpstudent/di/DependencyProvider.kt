@@ -1,5 +1,6 @@
 package hr.wortex.otpstudent.di
 
+import androidx.lifecycle.ViewModel
 import hr.wortex.otpstudent.App
 import hr.wortex.otpstudent.data.local.TokenStorage
 import hr.wortex.otpstudent.data.remote.AuthInterceptor
@@ -17,10 +18,13 @@ import hr.wortex.otpstudent.domain.usecase.GetInstitutions
 import hr.wortex.otpstudent.domain.usecase.Login
 import hr.wortex.otpstudent.domain.usecase.Register
 import hr.wortex.otpstudent.data.remote.datasource.InternshipRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.interfaces.IChatRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.StudentJobRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.interfaces.IInternshipRemoteDataSource
+import hr.wortex.otpstudent.data.remote.datasource.ChatRemoteDataSource
 import hr.wortex.otpstudent.data.remote.datasource.interfaces.IStudentJobRemoteDataSource
 import hr.wortex.otpstudent.domain.repository.InternshipRepository
+import hr.wortex.otpstudent.domain.repository.interfaces.IChatRepository
 import hr.wortex.otpstudent.domain.repository.StudentJobRepository
 import hr.wortex.otpstudent.domain.repository.interfaces.IInternshipRepository
 import hr.wortex.otpstudent.domain.repository.interfaces.IStudentJobRepository
@@ -38,6 +42,9 @@ import hr.wortex.otpstudent.domain.usecase.GetStudentJobs
 import hr.wortex.otpstudent.domain.usecase.GetUser
 import hr.wortex.otpstudent.domain.usecase.HasStudentAppliedToJob
 import hr.wortex.otpstudent.domain.usecase.MarkInfoContentRead
+import hr.wortex.otpstudent.domain.repository.ChatRepository
+import hr.wortex.otpstudent.domain.usecase.SendChatMessage
+import hr.wortex.otpstudent.ui.chatbot.ChatbotViewModel
 import hr.wortex.otpstudent.domain.usecase.UnapplyFromStudentJob
 import hr.wortex.otpstudent.ui.career.StudentJobsViewModelFactory
 
@@ -117,4 +124,29 @@ object DependencyProvider {
     val getStudentJobDetailsUseCase by lazy { GetStudentJobDetails(studentJobRepository) }
     val applyToStudentJobUseCase by lazy { ApplyToStudentJob(studentJobRepository) }
     val unapplyFromStudentJobUseCase by lazy { UnapplyFromStudentJob(studentJobRepository) }
+
+    private val chatRemoteDataSource: IChatRemoteDataSource by lazy {
+        ChatRemoteDataSource(apiServiceWithInterceptor)
+    }
+
+    val chatRepository: IChatRepository by lazy {
+        ChatRepository(
+            remoteDataSource = chatRemoteDataSource,
+            userRepository = userRepository
+        )
+    }
+
+    val sendChatMessageUseCase by lazy { SendChatMessage(chatRepository) }
+
+    val chatbotViewModelFactory by lazy {
+        object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(ChatbotViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return ChatbotViewModel(sendChatMessageUseCase) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    }
 }

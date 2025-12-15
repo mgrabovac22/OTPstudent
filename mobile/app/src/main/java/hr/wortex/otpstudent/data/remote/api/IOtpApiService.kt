@@ -1,5 +1,7 @@
 package hr.wortex.otpstudent.data.remote.api
 
+import hr.wortex.otpstudent.data.remote.dto.ChatRequestDto
+import hr.wortex.otpstudent.data.remote.dto.ChatResponseDto
 import hr.wortex.otpstudent.data.remote.dto.ChangePasswordDto
 import hr.wortex.otpstudent.data.remote.dto.InstitutionDto
 import hr.wortex.otpstudent.data.remote.dto.InternshipApplicationDto
@@ -87,6 +89,10 @@ interface IOtpApiService {
     suspend fun applyToInternship(
         @Body application: InternshipApplicationDto
     ): retrofit2.Response<Unit>
+
+    @POST("api/chat")
+    suspend fun chat(@Body request: ChatRequestDto): ChatResponseDto
+
 
     @POST("api/change-password")
     suspend fun changePassword(
